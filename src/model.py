@@ -1,17 +1,27 @@
+"""
+Create the vertices for MEEP to use as a material
+"""
+
 import meep as mp
 import numpy as np
 
 
-def create_vertices(ampl, periodicity, thickness, resolution, sizex, y=False, matrix=None):
-    # create vertices for sinusoidal grating with given parameters
-    # if y, rotate it 90 degrees
-    # if matrix is not None, additionally transform geometry
+def create_sinus_grating(
+    ampl, periodicity, thickness, resolution, sizex, y=False, matrix=None
+):
+    """
+    Create vertices for sinusoidal grating with given parameters
+    If y is given, rotate it 90 degrees
+    If matrix is not None, additionally transform geometry
+    """
+
     freq = 1 / periodicity
     vertices = []
     aux_vert = []
     dx = 2 / resolution
 
-    def f(x): return ampl / 2 * np.cos(2 * np.pi * x * freq)
+    def f(x):
+        return ampl / 2 * np.cos(2 * np.pi * x * freq)
 
     for i in np.arange(-sizex / 2 - dx, sizex / 2 + dx + dx, dx):
         x_coord = i

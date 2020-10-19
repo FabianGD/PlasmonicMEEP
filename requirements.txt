@@ -1,0 +1,6 @@
+h5py
+h5py_cache
+joblib
+matplotlib
+meep
+numpy

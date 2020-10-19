@@ -1,0 +1,8 @@
+[FORMAT]
+good-names=i,j,k,_,x,y,z,f,t,e,r,dx,dy,dr,dk,ii,mu,PES,NP,wf,ax,df
+
+[MESSAGES CONTROL]
+disable=
+    bad-continuation,
+    W1202,
+    fixme
