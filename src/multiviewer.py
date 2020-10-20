@@ -1,18 +1,14 @@
 """
 Slice viewer implemented using matplotlib.
 From https://www.datacamp.com/community/tutorials/matplotlib-3d-volumetric-data
-
-TODO!
-
 """
 
+from functools import partial
 
 import matplotlib.pyplot as plt
 
+
 AXIS = -1
-COLORBAR = None
-IMG = None
-IDX_FCT = None
 
 
 def remove_keymap_conflicts(new_keys_set):
@@ -28,47 +24,69 @@ def remove_keymap_conflicts(new_keys_set):
 
 
 def multi_slice_viewer(volume, index_function=lambda x: x):
-    global IMG
-    global IDX_FCT
-    IDX_FCT = index_function
+    """
+    Entry function
+    """
+
+    # global COLORBAR  # pylint: disable=global-statement
     remove_keymap_conflicts({"j", "k"})
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+
+    # Add custom attributes to the axis instead of global vars
     ax.volume = volume
+    ax.cbar = None
     ax.index = volume.shape[AXIS] // 2
-    IMG = ax.imshow(volume[:, :, ax.index])
-    fig.canvas.mpl_connect("key_press_event", process_key)
+
+    # Plot the first frame
+    img = ax.imshow(volume[:, :, ax.index])
+    ax.cbar = plt.colorbar(img, ax=ax)
+
+    # Partially apply function arguments
+    processor = partial(process_key, img=img, idx_fct=index_function)
+    fig.canvas.mpl_connect("key_press_event", processor)
 
 
-def process_key(event):
-    global COLORBAR
+def process_key(event, img, idx_fct):
+    """
+    Matplotlib connected callback function.
+    """
+    # global COLORBAR  # pylint: disable=global-statement
+
     fig = event.canvas.figure
     ax = fig.axes[0]
 
-    if COLORBAR is not None:
-        COLORBAR.remove()
+    # Remove the old colorbar
+    if ax.cbar is not None:
+        ax.cbar.remove()
 
-    if event.key == "j":
-        previous_slice(ax)
+    if event.key == "k":
+        previous_slice(ax, idxf=idx_fct)
 
-    elif event.key == "k":
-        next_slice(ax)
+    elif event.key == "j":
+        next_slice(ax, idxf=idx_fct)
 
-    COLORBAR = plt.colorbar(IMG)
-    # data = ax.images[0].get_array()
+    # Build a new colorbar
+    ax.cbar = plt.colorbar(img, ax=ax)
 
-    IMG.autoscale()
+    img.autoscale()
     fig.canvas.draw()
 
 
-def previous_slice(ax):
+def previous_slice(ax, idxf=lambda x: x):
+    """
+    Render the previous slice
+    """
     volume = ax.volume
     ax.index = (ax.index - 1) % volume.shape[AXIS]  # wrap around using %
     ax.images[0].set_array(volume[:, :, ax.index])
-    ax.set_title(IDX_FCT(ax.index))
+    ax.set_title(idxf(ax.index))
 
 
-def next_slice(ax):
+def next_slice(ax, idxf=lambda x: x):
+    """
+    Render the next slice
+    """
     volume = ax.volume
     ax.index = (ax.index + 1) % volume.shape[AXIS]
     ax.images[0].set_array(volume[:, :, ax.index])
-    ax.set_title(IDX_FCT(ax.index))
+    ax.set_title(idxf(ax.index))

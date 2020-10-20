@@ -3,6 +3,8 @@ Calculate FDTD using MEEP of a plasmonic nanostructure
 """
 
 import argparse
+import sys
+
 import matplotlib.pyplot as plt
 import meep as mp
 import numpy as np
@@ -56,6 +58,13 @@ def argparsing():
     )
 
     return parser.parse_args()
+
+
+def vec3_to_nparray(vec):
+    """
+    Utility to convert a Vector3 to a (3)-shaped np.ndarray
+    """
+    return np.asarray([vec.x, vec.y, vec.z])
 
 
 def main():
@@ -225,7 +234,7 @@ def main():
         geometry=geometry,
         sources=sources,
         resolution=resolution,
-        filename_prefix=args.outpu + "data",
+        filename_prefix=args.output + "data",
         split_chunks_evenly=False,
     )
 
@@ -237,10 +246,16 @@ def main():
     print("Starting main run")
 
     if geom:
-        sim.plot2D(labels=True)
+        vertices = np.asarray([vec3_to_nparray(vert) for vert in metal_vert])
+        x, y, _ = vertices.T
+
+        sim.plot2D(labels=True, fields=mp.Hz)
+
         if mp.am_master():
+            plt.plot(x, y)
             plt.show()
-        exit()
+
+        sys.exit()
 
     sim.run(
         mp.to_appended(
