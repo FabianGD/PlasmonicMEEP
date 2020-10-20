@@ -56,6 +56,11 @@ def argparsing():
         default="data/",
         help="Output folder."
     )
+    parser.add_argument(
+        "--sinus",
+        action="store_true",
+        help="Create the sinus grating geometry for benchmarking."
+    )
 
     return parser.parse_args()
 
@@ -218,15 +223,22 @@ def main():
         # dispersive materials
         mat = mp.Medium(epsilon=5)
 
-    geometry = [
-        mp.Prism(
-            metal_vert,
-            height=100,
-            center=mp.Vector3(0, 0, 0),
-            axis=mp.Vector3(0, 0, 1),
-            material=mat,
-        )
-    ]
+    if args.sinus:
+        geometry = [
+            mp.Prism(
+                metal_vert,
+                height=100,
+                center=mp.Vector3(0, 0, 0),
+                axis=mp.Vector3(0, 0, 1),
+                material=mat,
+            )
+        ]
+    else:
+        geometry = [
+            *model.create_np_on_mirror(
+                0.05, 0.005, mat, fullx, fully, y=True
+            )
+        ]
 
     sim = mp.Simulation(
         cell_size=cell,
