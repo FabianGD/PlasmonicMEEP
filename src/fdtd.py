@@ -95,27 +95,9 @@ def main():
     cell = mp.Vector3(fullx, fully, 0)
     mat = materials.Au
 
-    #####################
-    # run modes
-    # geom - show geometry instead of actual simulation
-    # saveref - save the reference file, needed for field enhancement calculations
-    ####################
-
+    # Methods
     geom = args.show_geometry
     saveref = True
-
-    ####################
-    # geometry, load AFM profile
-    ####################
-
-    metal_vert = model.create_sinus_grating(
-        ampl=0.1,
-        periodicity=0.5,
-        thickness=0.04,
-        resolution=resolution,
-        sizex=fully,
-        y=True,
-    )
 
     ####################
     # source paraneters
@@ -132,6 +114,7 @@ def main():
     # Field component to monitor
     comp = mp.Hz
 
+    # List of sources, needed for the simulation
     sources = [
         mp.Source(
             mp.GaussianSource(frequency=cfreq, fwidth=fwidth),
@@ -156,7 +139,7 @@ def main():
         split_chunks_evenly=False,
     )
 
-    # define monitors for further spectra calculation
+    # Define monitors for further spectra calculation
     mon_height = sizey
     nfreq = 200
 
@@ -224,6 +207,15 @@ def main():
         mat = mp.Medium(epsilon=5)
 
     if args.sinus:
+
+        metal_vert = model.create_sinus_grating(
+            ampl=0.1,
+            periodicity=0.5,
+            thickness=0.04,
+            resolution=resolution,
+            sizex=fully,
+            y=True,
+        )
         geometry = [
             mp.Prism(
                 metal_vert,
@@ -235,7 +227,7 @@ def main():
         ]
     else:
         geometry = [
-            *model.create_np_on_mirror(
+            *model.two_nps(
                 0.05, 0.005, mat, fullx, fully, y=True
             )
         ]
@@ -258,13 +250,14 @@ def main():
     print("Starting main run")
 
     if geom:
-        vertices = np.asarray([vec3_to_nparray(vert) for vert in metal_vert])
-        x, y, _ = vertices.T
+        if args.sinus:
+            vertices = np.asarray([vec3_to_nparray(vert) for vert in metal_vert])
+            x, y, _ = vertices.T
+            plt.plot(x, y)
 
         sim.plot2D(labels=True, fields=mp.Hz)
 
         if mp.am_master():
-            plt.plot(x, y)
             plt.show()
 
         sys.exit()

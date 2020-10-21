@@ -60,28 +60,20 @@ def create_sinus_grating(
     return vertices + aux_vert
 
 
-def create_np_on_mirror(radius, separation, material, size_x, size_y, y=False):
+def two_nps(radius, separation, material, size_x, size_y, y=False):
 
     # TODO
 
     # Generate the slab coordinates
     if y:
-        block_width = size_x / 2
-        block_size = mp.Vector3(block_width, mp.inf, mp.inf)
-        block_center = mp.Vector3(size_x / 2, 0, 0)
-        sphere1_pos = mp.Vector3(
-            block_center.x - block_width / 2 - radius - separation, 0, 0
-        )
-        sphere2_pos = mp.Vector3(
-            block_center.x - block_width / 2 + radius, 0, 0
-        )
+        center = mp.Vector3(size_x / 4, 0, 0)
+        sphere1_pos = mp.Vector3(center.x - radius - separation, 0, 0)
+        sphere2_pos = mp.Vector3(center.x + radius, 0, 0)
+
     else:
-        block_width = size_y / 2
-        block_size = mp.Vector3(mp.inf, block_width, mp.inf)
-        block_center = mp.Vector3(0, 1 / block_width, 0)
-        sphere_pos = mp.Vector3(
-            0, block_center.x - block_width / 2 - radius - separation, 0
-        )
+        center = mp.Vector3(0, size_y / 4, 0)
+        sphere1_pos = mp.Vector3(center.y - radius - separation, 0, 0)
+        sphere2_pos = mp.Vector3(center.y + radius, 0, 0)
 
     # block = mp.Block(block_size, center=block_center, material=material)
     sphere1 = mp.Sphere(center=sphere1_pos, radius=radius, material=material)
