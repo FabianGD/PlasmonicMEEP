@@ -8,12 +8,13 @@ The scripts are originally built at [Trel725/plasmon-meep](https://github.com/Tr
 
 ## How it works
 
-1. Meep simulates interaction of structure of interest with EM waves, producing arrays describing field distribution in space and time.
-Simulation is done twice, for the empty cell (reference run) and for the cell containing structure.
+1. Meep simulates interaction of structure of interest with EM waves, producing arrays describing
+   field distribution in space and time.
+   Simulation is done twice, for the empty cell (reference run) and for the cell containing structure.
 2. The FFT is performed on arrays from previous step, thus tranforming electric fields to frequency domain.
 3. Complex values of tranformed fields are squared, producing energiy density at given frequncies.
-4. Densities of normal run are normalized by reference run, which directly gives EM field enhancement distribution
-in space and frequency
+4. Densities of normal run are normalized by reference run, which directly gives EM field enhancement
+   distribution in space and frequency
 
 ## How to use it
 
@@ -34,4 +35,5 @@ In case of any questions, please, firstly have a look at the issues (including c
 
 ## Notes
 
-[multiviewer.py](./src/multiviewer.py) is taken from [Datacamp](https://www.datacamp.com/community/tutorials/matplotlib-3d-volumetric-data)
+The [multiviewer.py](./src/multiviewer.py) module is taken and modified
+from [Datacamp](https://www.datacamp.com/community/tutorials/matplotlib-3d-volumetric-data).
