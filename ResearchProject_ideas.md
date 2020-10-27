@@ -26,3 +26,6 @@
      [here](https://meep.readthedocs.io/en/latest/Python_Tutorials/Basics/)
 4. [GitLab repo](https://gitlab.com/theoretical-chemistry-jena/quantum-dynamics/plasmonic-meep)
    with Python code and this document
+5. Video introductions
+   - [Andrey Bogdanov: Introduction to Green’s functions
+      & scattering theory. Mie theory. Part 1.](https://www.youtube.com/watch?v=bUfcVTIlJz0)
