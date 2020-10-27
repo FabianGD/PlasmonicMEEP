@@ -27,5 +27,6 @@
 4. [GitLab repo](https://gitlab.com/theoretical-chemistry-jena/quantum-dynamics/plasmonic-meep)
    with Python code and this document
 5. Video introductions
-   - [Andrey Bogdanov: Introduction to Green’s functions
-      & scattering theory. Mie theory. Part 1.](https://www.youtube.com/watch?v=bUfcVTIlJz0)
+   - [Andrey Bogdanov: Introduction to Green’s functions & scattering theory. Mie theory. Part 1.](https://www.youtube.com/watch?v=bUfcVTIlJz0)
+   - [Andrey Bogdanov: Mie theory. Part 2](https://youtu.be/CaFyJRN_iYI)
+   - [Kristina Frizyuk: Kerker effect. Mie theory. Part 3.](https://youtu.be/JblWhmOexy4)
