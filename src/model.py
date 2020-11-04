@@ -2,13 +2,21 @@
 Create the vertices for MEEP to use as a material
 """
 
+from typing import List, Optional
+
 import meep as mp
 import numpy as np
 
 
 def create_sinus_grating(
-    ampl, periodicity, thickness, resolution, sizex, y=False, matrix=None
-):
+    ampl: float,
+    periodicity: float,
+    thickness: float,
+    resolution: float,
+    sizex: float,
+    y: bool = False,
+    matrix: Optional[np.ndarray] = None,
+) -> List[mp.Vector3]:
     """
     Create vertices for sinusoidal grating with given parameters
     If y is given, rotate it 90 degrees
@@ -55,14 +63,20 @@ def create_sinus_grating(
         else:
             aux_vert.append(mp.Vector3(x_coord, y_coord))
 
-    # print(list(zip(vertices, aux_vert[::-1])))
-
     return vertices + aux_vert
 
 
-def two_nps(radius, separation, material, size_x, size_y, y=False):
-
-    # TODO
+def two_nps(
+    radius: float,
+    separation: float,
+    material: mp.Medium,
+    size_x: float,
+    size_y: float,
+    y: bool = False,
+) -> List[mp.Sphere]:
+    """
+    Create two nanoparticles used in a simulation
+    """
 
     # Generate the slab coordinates
     if y:

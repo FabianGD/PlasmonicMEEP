@@ -4,11 +4,7 @@ From https://www.datacamp.com/community/tutorials/matplotlib-3d-volumetric-data
 """
 
 from functools import partial
-
 import matplotlib.pyplot as plt
-
-
-AXIS = -1
 
 
 def remove_keymap_conflicts(new_keys_set):
@@ -35,7 +31,7 @@ def multi_slice_viewer(volume, index_function=lambda x: x):
     # Add custom attributes to the axis instead of global vars
     ax.volume = volume
     ax.cbar = None
-    ax.index = volume.shape[AXIS] // 2
+    ax.index = volume.shape[-1] // 2
 
     # Plot the first frame
     img = ax.imshow(volume[:, :, ax.index])
@@ -50,7 +46,6 @@ def process_key(event, img, idx_fct):
     """
     Matplotlib connected callback function.
     """
-    # global COLORBAR  # pylint: disable=global-statement
 
     fig = event.canvas.figure
     ax = fig.axes[0]
@@ -60,10 +55,10 @@ def process_key(event, img, idx_fct):
         ax.cbar.remove()
 
     if event.key == "k":
-        previous_slice(ax, idxf=idx_fct)
+        _previous_slice(ax, idxf=idx_fct)
 
     elif event.key == "j":
-        next_slice(ax, idxf=idx_fct)
+        _next_slice(ax, idxf=idx_fct)
 
     # Build a new colorbar
     ax.cbar = plt.colorbar(img, ax=ax)
@@ -72,21 +67,21 @@ def process_key(event, img, idx_fct):
     fig.canvas.draw()
 
 
-def previous_slice(ax, idxf=lambda x: x):
+def _previous_slice(ax, idxf=lambda x: x):
     """
     Render the previous slice
     """
     volume = ax.volume
-    ax.index = (ax.index - 1) % volume.shape[AXIS]  # wrap around using %
+    ax.index = (ax.index - 1) % volume.shape[-1]  # wrap around using %
     ax.images[0].set_array(volume[:, :, ax.index])
     ax.set_title(idxf(ax.index))
 
 
-def next_slice(ax, idxf=lambda x: x):
+def _next_slice(ax, idxf=lambda x: x):
     """
     Render the next slice
     """
     volume = ax.volume
-    ax.index = (ax.index + 1) % volume.shape[AXIS]
+    ax.index = (ax.index + 1) % volume.shape[-1]
     ax.images[0].set_array(volume[:, :, ax.index])
     ax.set_title(idxf(ax.index))

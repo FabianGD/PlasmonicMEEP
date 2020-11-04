@@ -207,7 +207,6 @@ def main():
         mat = mp.Medium(epsilon=5)
 
     if args.sinus:
-
         metal_vert = model.create_sinus_grating(
             ampl=0.1,
             periodicity=0.5,
@@ -278,7 +277,6 @@ def main():
     refl_flux = np.asarray(mp.get_fluxes(refl))
     tran_flux = np.asarray(mp.get_fluxes(tran))
     straight_tran_flux = np.asarray(straight_tran_flux)
-
     flux_freqs = np.asarray(mp.get_flux_freqs(refl))
 
     wavelengths = 1 / flux_freqs
@@ -287,16 +285,19 @@ def main():
     loss_spectrum = 1 - refl_spectrum - tran_spectrum
 
     if mp.am_master():
-        plt.figure()
-        plt.plot(wavelengths, refl_spectrum, "b-", label="reflectance")
-        plt.plot(wavelengths, tran_spectrum, "r-", label="transmittance")
-        plt.plot(wavelengths, loss_spectrum, "go-", label="loss")
-        # plt.axis([5.0, 10.0, 0, 1])
-        plt.xlabel("wavelength (μm)")
-        plt.legend(loc="upper right")
-        plt.grid(True)
+        fig, ax = plt.subplots()
 
-        plt.savefig("spectra.svg")
+        ax.plot(wavelengths, refl_spectrum, color="blue", label="reflectance")
+        ax.plot(wavelengths, tran_spectrum, color="red", label="transmittance")
+        ax.plot(wavelengths, loss_spectrum, color="green", label="loss")
+
+        ax.set_xlabel("wavelength / μm")
+        ax.legend(loc="upper right")
+        ax.grid(True)
+
+        fig.tight_layout()
+        fig.savefig("spectra.svg")
+
         plt.show()
 
 
