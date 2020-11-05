@@ -50,16 +50,11 @@ def argparsing():
         action="store_true",
         help="Plot only geometry and exit.",
     )
-    parser.add_argument(
-        "-o",
-        "--output",
-        default="data/",
-        help="Output folder."
-    )
+    parser.add_argument("-o", "--output", default="data/", help="Output folder.")
     parser.add_argument(
         "--sinus",
         action="store_true",
-        help="Create the sinus grating geometry for benchmarking."
+        help="Create the sinus grating geometry for benchmarking.",
     )
 
     return parser.parse_args()
@@ -98,10 +93,6 @@ def main():
     # Methods
     geom = args.show_geometry
     saveref = True
-
-    ####################
-    # source paraneters
-    ####################
 
     # Frequency in  1 / µm. Speed of light c == 1
     # Size dimension a --> Time dimension a / c
@@ -164,9 +155,9 @@ def main():
 
     print("Starting reference run")
 
-    #!######################
-    #! Reference calculation
-    #!######################
+    #######################
+    # Reference calculation
+    #######################
 
     if geom:
         sim.init_sim()
@@ -196,9 +187,9 @@ def main():
 
     sim.reset_meep()
 
-    #!#####################
-    #! Material calculation
-    #!#####################
+    ######################
+    # Material calculation
+    ######################
 
     if geom:
         # overwrite mat to be correctly displayed
@@ -225,11 +216,7 @@ def main():
             )
         ]
     else:
-        geometry = [
-            *model.two_nps(
-                0.05, 0.005, mat, fullx, fully, y=True
-            )
-        ]
+        geometry = [*model.two_nps(0.05, 0.005, mat, fullx, fully, y=True)]
 
     sim = mp.Simulation(
         cell_size=cell,

@@ -14,6 +14,39 @@
 5. If applicable, compare the numerical results with the theory
 6. (Couple MEEP to pyQD to do coupled ED-QD simulations)
 
+## Introductory problems (Write-your-own-code)
+
+### Analytical solutions to the Mie scattering problem on spheres
+
+We would like to compare the numerical scattering profile (which we will calculate using MEEP)
+to the Mie-Lorenz scattering theory. Therefore it would be great to write the analytical solutions
+to the Mie scattering problem of a plane wave with frequency $\omega_P$ on simple shapes such as a sphere with a radius $r$ in code.
+
+> Whats the formula? --> May be too complex to start with.
+
+### Build custom geometries
+
+Start building custom geometries using MEEP, both based on `mp.Sphere`, `mp.Block`, etc.
+and using custom geometries based on vertices (represented as `mp.Vector3`'s) and the
+`mp.Prism` class.
+
+Ideas:
+
+- Two "wires" besides each other. This should simulate a micro- or nanocavity.
+- Two triangles |> <| or <| |> facing.
+- Put a sphere on a "surface", such as a slab of material.
+
+### Calculate transmission and reflection spectra
+
+Get to know the concept of flux regions and monitors.
+For the geometries above, try to insert monitors, define flux regions and, lastly,
+calculate transmission spectra using this setup. You might need a reference and normal run.
+The MEEP code located in `./src/fdtd.py` has a similar setup.
+
+### Find out how to calculate field enhancements
+
+Use different types of materials, (gold, silicon dioxide, semiconductors, etc.)
+
 ## Literature
 
 1. Ribeiro, R. F.; Martínez-Martínez, L. A.; Du, M.; Campos-Gonzalez-Angulo, J.; Yuen-Zhou, J.
