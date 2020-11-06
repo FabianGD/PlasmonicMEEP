@@ -1,5 +1,5 @@
 [FORMAT]
-good-names=i,j,k,_,x,y,z,f,t,e,r,dx,dy,dr,dk,ii,mu,PES,NP,wf,ax,df
+good-names=i,j,k,_,x,y,z,f,t,e,r,dx,dy,dr,dk,ii,mu,PES,NP,wf,ax,df,n
 
 [MESSAGES CONTROL]
 disable=
