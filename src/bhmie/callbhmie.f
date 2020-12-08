@@ -1,14 +1,13 @@
-      PROGRAM CALLBHMIE
+      program CALLBHMIE
       IMPLICIT NONE
 C Parameters:
-      INTEGER MXNANG
-      PARAMETER(MXNANG=1000)
+      integer MXNANG
+      parameter(MXNANG=1000)
 C Variables:
-      INTEGER IREADEP,IREADX,J,NAN,NANG,NANG0
-      REAL AJ,ANG,DANG,GSCA,PI,POL,
-     &     QABS,QBACK,QEXT,QSCA,RAD,REFMED,
-     &     S11,S12,S33,S34,WAVEL,X
-      COMPLEX REFREL,CXEPS,S1(2*MXNANG-1),S2(2*MXNANG-1)
+      integer IREADEP,IREADX,J,NAN,NANG,NANG0
+      REAL AJ,ANG,DANG,GSCA,PI,POL,QABS,QBACK,QEXT,QSCA,RAD,REFMED,S11,
+     &   S12,S33,S34,WAVEL,X
+      complex REFREL,CXEPS,S1(2*MXNANG-1),S2(2*MXNANG-1)
 C***********************************************************************
 C Program to interactively call Bohren-Huffman Mie theory program
 C
@@ -34,7 +33,7 @@ C History:
 C 97.08.08 (BTD): changed sign of POL
 C 01.02.16 (BTD): added IMPLICIT NONE
 C                 modified input to allow direct input of x
-C                 added new output file callbhmie.outS_j to compare with 
+C                 added new output file callbhmie.outS_j to compare with
 C                 Wiscombe code results
 C end history
 C***********************************************************************
@@ -51,7 +50,7 @@ C***********************************************************************
          READ(*,*)REFREL
       ELSE
          WRITE(*,*)' Enter complex epsilon of sphere in form (a,b) ',
-     &            '[(0,0) to stop]'
+     &      '[(0,0) to stop]'
          READ(*,*)CXEPS
          REFREL=SQRT(CXEPS)
       ENDIF
@@ -59,7 +58,7 @@ C***********************************************************************
       REFREL=REFREL/REFMED
       WRITE(*,6012)REFREL
       WRITE(7,6012)REFREL
- 6012 FORMAT(' Complex refractive index=',1PE10.3,' +',E10.3,'*i')
+ 6012 FORMAT(' complex refractive index=',1PE10.3,'+',E10.3,'*i')
  2000 WRITE(0,*)' Enter 0 to change refractive index'
       WRITE(0,*)'       1 to input x = 2*pi*a/lambda'
       WRITE(0,*)'       2 to input a and lambda separately'
@@ -126,13 +125,11 @@ C
       GOTO 3000
  6013 FORMAT(' radius=',1PE11.4,' lambda=',E11.4,' x=',E11.4)
  6017 FORMAT(2X,'theta',7X,'S11',9X,'S12=S21',7X,'S33=S44',6X,
-     &   'S34=-S43',7X,'P')
- 8017 FORMAT(2X,'theta','  --------- S_1 ----------',
-     &                  '  --------- S_2 ----------',
-     &                  ' --  S_11 --',
-     &                  '    -pol.')
- 6065 FORMAT(/,'Qext=',1PE11.4,' Qsca=',E11.4,' Qabs=',E11.4,
-     &' <cos>=',E11.4,/,17X,'Qbk =',E11.4)
+     &'S34=-S43',7X,'P')
+ 8017 FORMAT(2X,'theta','---------S_1----------','---------S_2----------
+     &','--S_11--','-pol.')
+ 6065 FORMAT(/,'Qext=',1PE11.4,' Qsca=',E11.4,' Qabs=',E11.4,' <cos>=',
+     &E11.4,/,17X,'Qbk =',E11.4)
  6075 FORMAT(1X,F6.2,2X,1PE12.5,2X,E12.5,2X,E12.5,2X,E12.5,0PF9.5)
  8075 FORMAT(1X,F6.2,1P4E13.5,1PE12.5,0PF9.4)
       END

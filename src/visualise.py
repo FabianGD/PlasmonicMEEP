@@ -3,6 +3,7 @@ Visualise the FDTD results.
 """
 
 import argparse
+from argparse import PARSER
 import sys
 from pathlib import Path
 
@@ -29,10 +30,16 @@ def argparsing():
         "-x", "--excel", action="store_true", help="Save to excel insted of CSV"
     )
     parser.add_argument("-k", "--xyskip", type=int, help="Number of pixels to skip")
-    args = parser.parse_args()
     parser.add_argument(
         "-p", "--mplstyle", type=str, help="Give a matplotlib style to use. Optional."
     )
+    parser.add_argument(
+        "-r", "--resolution", type=int, help="Resolution of the simulation, in px / µm."
+    )
+
+
+    args = parser.parse_args()
+
     return args
 
 
@@ -41,6 +48,10 @@ def main():
     Main function for the visualiser
     """
     args = argparsing()
+
+    if args.mplstyle is not None:
+        mplstyle = Path(args.mplstyle)
+        plt.style.use(mplstyle)
 
     print("Opening {} as data file...".format(args.file))
 
@@ -99,10 +110,13 @@ def main():
     fig.tight_layout()
     plt.show()
 
+    print(args.resolution)
+
     # visualize data
     multi_slice_viewer(
         data[skip_x:-skip_x, skip_y:-skip_y, :],
         index_function=lambda x: 1000 / freqs[x],
+        resolution=args.resolution
     )
 
     plt.show()

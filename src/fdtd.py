@@ -4,6 +4,7 @@ Calculate FDTD using MEEP of a plasmonic nanostructure
 
 import argparse
 import sys
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import meep as mp
@@ -25,14 +26,14 @@ def argparsing():
     )
     parser.add_argument(
         "-x",
-        "--sx",
+        "--sizex",
         type=float,
         default=1.0,
         help="The size of the box in µm in the x direction.",
     )
     parser.add_argument(
         "-y",
-        "--sy",
+        "--sizey",
         type=float,
         default=2.0,
         help="The size of the box in µm in the y direction.",
@@ -56,7 +57,6 @@ def argparsing():
         action="store_true",
         help="Create the sinus grating geometry for benchmarking.",
     )
-
     return parser.parse_args()
 
 
@@ -75,8 +75,8 @@ def main():
     args = argparsing()
 
     # Inner size
-    sizex = args.sx
-    sizey = args.sy
+    sizex = args.sizex
+    sizey = args.sizey
 
     # Computational grid resolution in pixels per distance unit
     resolution = args.resolution
@@ -100,7 +100,7 @@ def main():
     # Frequency has dim [c/a]
     cfreq = 1.5
     # Frequency width of the Gaussian pulse
-    fwidth = 1.5
+    fwidth = 1.5  # in units of µm
 
     # Field component to monitor
     comp = mp.Hz
@@ -116,7 +116,12 @@ def main():
     ]
 
     # Absorber on grating side because of field divergence at metal/pml interface
-    pml_layers = [mp.PML(pml_th, direction=mp.X), mp.Absorber(pml_th, direction=mp.Y)]
+    # pml_layers = [mp.PML(pml_th, direction=mp.X), mp.Absorber(pml_th, direction=mp.Y)]
+    pml_layers = [mp.PML(pml_th, direction=mp.ALL)]
+
+    output_path = Path(args.output)
+    if not output_path.is_dir():
+        output_path.mkdir()
 
     # empty cell for reference run
     geometry = []
@@ -161,6 +166,7 @@ def main():
 
     if geom:
         sim.init_sim()
+
     else:
         if saveref:
             sim.run(

@@ -7,6 +7,13 @@ from functools import partial
 import matplotlib.pyplot as plt
 
 
+def settitle(ax, fct, patt=None):
+    """Sets the title for the specific axis."""
+    if not patt:
+        patt = "{:.0f} nm"
+    ax.set_title(patt.format(fct(ax.index)))
+
+
 def remove_keymap_conflicts(new_keys_set):
     """
     Removes key stroke conflicts from the rcParams dict.
@@ -19,7 +26,7 @@ def remove_keymap_conflicts(new_keys_set):
                 keys.remove(key)
 
 
-def multi_slice_viewer(volume, index_function=lambda x: x):
+def multi_slice_viewer(volume, index_function=lambda x: x, resolution=None):
     """
     Entry function
     """
@@ -74,7 +81,7 @@ def _previous_slice(ax, idxf=lambda x: x):
     volume = ax.volume
     ax.index = (ax.index - 1) % volume.shape[-1]  # wrap around using %
     ax.images[0].set_array(volume[:, :, ax.index])
-    ax.set_title(idxf(ax.index))
+    settitle(ax=ax, fct=idxf)
 
 
 def _next_slice(ax, idxf=lambda x: x):
@@ -84,4 +91,4 @@ def _next_slice(ax, idxf=lambda x: x):
     volume = ax.volume
     ax.index = (ax.index + 1) % volume.shape[-1]
     ax.images[0].set_array(volume[:, :, ax.index])
-    ax.set_title(idxf(ax.index))
+    settitle(ax=ax, fct=idxf)
