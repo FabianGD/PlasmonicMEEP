@@ -119,9 +119,10 @@ def main():
     # pml_layers = [mp.PML(pml_th, direction=mp.X), mp.Absorber(pml_th, direction=mp.Y)]
     pml_layers = [mp.PML(pml_th, direction=mp.ALL)]
 
-    output_path = Path(args.output)
+    output_path = Path(args.output).resolve()
     if not output_path.is_dir():
-        output_path.mkdir()
+        output_path.mkdir(parents=True, exist_ok=True)
+    output = str(output_path)
 
     # empty cell for reference run
     geometry = []
@@ -131,9 +132,10 @@ def main():
         geometry=geometry,
         sources=sources,
         resolution=resolution,
-        filename_prefix=args.output + "data",
+        filename_prefix="plasmon",
         split_chunks_evenly=False,
     )
+    sim.use_output_directory(output)
 
     # Define monitors for further spectra calculation
     mon_height = sizey
@@ -230,9 +232,10 @@ def main():
         geometry=geometry,
         sources=sources,
         resolution=resolution,
-        filename_prefix=args.output + "data",
+        filename_prefix="plasmon",
         split_chunks_evenly=False,
     )
+    sim.use_output_directory(output)
 
     # same monitors
     refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)

@@ -1,0 +1,7 @@
+channels:
+  - conda-forge
+  - defaults
+ssl_verify: true
+envs_dirs:
+  - /beegfs/lu27wil/apps/conda-envs
+env_prompt: '[ {name} ] > '
