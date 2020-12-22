@@ -245,12 +245,8 @@ def main():
     print("Starting main run")
 
     if geom:
-        if args.sinus:
-            vertices = np.asarray([vec3_to_nparray(vert) for vert in metal_vert])
-            x, y, _ = vertices.T
-            plt.plot(x, y)
 
-        sim.plot2D(labels=True, fields=mp.Hz)
+        sim.plot2D(labels=True)
 
         if mp.am_master():
             plt.show()

@@ -3,7 +3,6 @@ Visualise the FDTD results.
 """
 
 import argparse
-from argparse import PARSER
 import sys
 from pathlib import Path
 
@@ -12,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from multiviewer import multi_slice_viewer
+from .multiviewer import multi_slice_viewer
 
 
 def argparsing():
@@ -36,7 +35,6 @@ def argparsing():
     parser.add_argument(
         "-r", "--resolution", type=int, help="Resolution of the simulation, in px / µm."
     )
-
 
     args = parser.parse_args()
 

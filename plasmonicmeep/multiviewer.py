@@ -26,7 +26,7 @@ def remove_keymap_conflicts(new_keys_set):
                 keys.remove(key)
 
 
-def multi_slice_viewer(volume, index_function=lambda x: x, resolution=None):
+def multi_slice_viewer(volume, index_function=lambda x: x):
     """
     Entry function
     """
