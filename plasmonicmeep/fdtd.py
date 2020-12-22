@@ -11,7 +11,7 @@ import meep as mp
 import numpy as np
 from meep import materials
 
-import model
+from .model import create_sinus_grating, two_nps
 
 
 def argparsing():
@@ -206,7 +206,7 @@ def main():
         mat = mp.Medium(epsilon=5)
 
     if args.sinus:
-        metal_vert = model.create_sinus_grating(
+        metal_vert = create_sinus_grating(
             ampl=0.1,
             periodicity=0.5,
             thickness=0.04,
@@ -224,7 +224,7 @@ def main():
             )
         ]
     else:
-        geometry = [*model.two_nps(0.05, 0.005, mat, fullx, fully, y=True)]
+        geometry = [*two_nps(0.05, 0.005, mat, fullx, fully, y=True)]
 
     sim = mp.Simulation(
         cell_size=cell,

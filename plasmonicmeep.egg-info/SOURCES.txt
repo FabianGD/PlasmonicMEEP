@@ -1,0 +1,15 @@
+README.md
+setup.py
+plasmonicmeep/__init__.py
+plasmonicmeep/calculate_2d_field.py
+plasmonicmeep/fdtd.py
+plasmonicmeep/model.py
+plasmonicmeep/multiviewer.py
+plasmonicmeep/visualise.py
+plasmonicmeep.egg-info/PKG-INFO
+plasmonicmeep.egg-info/SOURCES.txt
+plasmonicmeep.egg-info/dependency_links.txt
+plasmonicmeep.egg-info/entry_points.txt
+plasmonicmeep.egg-info/not-zip-safe
+plasmonicmeep.egg-info/requires.txt
+plasmonicmeep.egg-info/top_level.txt

@@ -1,0 +1,5 @@
+[console_scripts]
+plas-field = plasmonicmeep.calculate_2d_field:main
+plas-meep = plasmonicmeep.fdtd:main
+plas-vis = plasmonicmeep.visualise:main
+
