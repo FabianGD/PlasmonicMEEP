@@ -4,30 +4,72 @@
 
 This repo consists of a set of scripts for calculation of plasmon resonance/electric field enhancement on different structures.
 Scripts are powered by FDTD solver [MEEP](https://github.com/NanoComp/meep).
-The scripts are originally built at [Trel725/plasmon-meep](https://github.com/Trel725/plasmon-meep)
+The scripts are originally taken from [Trel725/plasmon-meep](https://github.com/Trel725/plasmon-meep).
 
 ## How it works
 
-1. Meep simulates interaction of structure of interest with EM waves, producing arrays describing
-   field distribution in space and time.
-   Simulation is done twice, for the empty cell (reference run) and for the cell containing structure.
-2. The FFT is performed on arrays from previous step, thus tranforming electric fields to frequency domain.
-3. Complex values of tranformed fields are squared, producing energiy density at given frequncies.
-4. Densities of normal run are normalized by reference run, which directly gives EM field enhancement
-   distribution in space and frequency
+1. Meep simulates interaction of structure of interest with EM waves, producing arrays
+   describing field distribution in space and time. Simulation is done twice, for
+   the empty cell (reference run) and for the cell containing structure.
+2. The FFT is performed on arrays from previous step, thus tranforming electric fields
+   to frequency domain.
+3. Complex values of tranformed fields are squared, producing energiy density at
+   given frequncies.
+4. Densities of normal run are normalized by reference run, which directly gives
+   EM field enhancement distribution in space and frequency
 
-## How to use it
+## Installation
 
-1. `mpirun -np 2 python3 ./src/perform_fdtd.py` perform step 1, parallel run on 2 processors.
-The script includes sinusoidal grating as example, which could be easily modified by modification
-of function definition in sinus.py or by defining own geometry.
-2. `python3  ./src/calculate_2d_field.py -s 250 -f 1.5 -w 1.5 ./data/data-norm.h5 ./data/data-ref.h5 ./data/freqs.h5`
-this script calculates FFT (parallel by default), its square and normalization.
-3. `python3 ./src/visualize_freqs.py -t 50 ./data/freqs.h5` visualize the calculated field enhancement arrays.
+To install the package, first install [MEEP](https://meep.readthedocs.io) using the [install instructions](https://meep.readthedocs.io/en/latest/Installation/) on their website. For the calculations proposed here it's re recommended to install the parallel version via **conda**.
 
-## How it looks
+### Installing conda and MEEP
 
-![Example image](img/geometry.png)
+Basically, on a Unix or WSL system, all you need to run the following commands in order. For more detailed instructions, see the [Anaconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) and [MEEP](https://meep.readthedocs.io) homepages
+
+```bash
+# To install conda on your machine. In the installation wizard you can change
+# things like prefixes for installation etc.
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda-install.sh && sh miniconda-install.sh
+
+# Now, with conda installed (you might need to reload your terminal), install
+# MEEP and some other libraries
+conda create -n pmeep -c conda-forge pymeep=*=mpi_mpich_* joblib pandas matplotlib h5py
+
+# Optional: You can also install the single-core variant using the following command
+conda create -n meep -c conda-forge pymeep joblib pandas matplotlib h5py
+```
+
+### Installing PlasmonicMEEP
+
+As a second step, `cd` to the package directory and install the package using pip. This is somewhat inconsistent, I'm working on a fix. This installs all the entrypoints to your current conda environment, so be sure to have the correct environment activated.
+
+```bash
+pip install .
+```
+
+After installation, you should find three executables, namely:
+
+- `plas-meep`, which does the FDTD calculations,
+- `plas-field`, which fourier transforms the time series data and calculates field enhancements,
+- `plas-vis`, that visualises the calculated enhancements as a spectrum and as a map.
+
+## Example usage
+
+```bash
+# perform step 1, parallel run on 2 processors. The default geometry are two spherical
+# gold nanoparticles with a radius of 50 nm and a spacing of 5 nm. The '-r 200' part
+# gives the resolution of the computational box in px / µm. The -x and -y flags govern the
+# size of the computational box. The '-o' parameter specifies an output directory.
+mpirun -np 2 plas-meep -r 200 -x 1 -y 1 -o data/
+
+# Calculate the FFT and the field enhancements in batches from the data calculated
+# in the first step. The '-f' and '-w' flags specify the
+plas-field -s 250 -f 1.5 -w 1.5 ./data/fdtd-norm.h5 ./data/fdtd-ref.h5 ./data/freqs.h5
+
+# Visualize the calculated field enhancement arrays. This will produce a spectrum
+# window first and, after closing it, show the field enhancement maps.
+plas-vis -k 50 ./data/freqs.h5
+```
 
 ## Questions
 

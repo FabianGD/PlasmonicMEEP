@@ -10,6 +10,9 @@ import numpy as np
 from joblib import Parallel, delayed
 
 
+class PlasmonicError(Exception):
+    """Custom error to indicate errors in the logic of the program flow."""
+
 def argparsing():
     """
     Build an argument parser and parse arguments.
@@ -20,9 +23,7 @@ def argparsing():
     parser.add_argument("file", type=str, help="Field file to use")
     parser.add_argument("reffile", type=str, help="Reference file to use")
     parser.add_argument("savefile", type=str, help="File to save results")
-    parser.add_argument("-s", "--size", type=int, help="Batch size")
-    parser.add_argument("-f", "--freq", type=float, help="Central gaussian frequency")
-    parser.add_argument("-w", "--width", type=float, help="Width of gaussian frequency")
+    parser.add_argument("-s", "--size", type=int, help="Batch size", default=100)
     parser.add_argument(
         "--loglevel",
         type=str,
@@ -68,14 +69,17 @@ def main():
 
     # Some argparsing.
     args = argparsing()
-    cfreq = args.freq
-    freq_width = args.width
 
     logging.basicConfig(level=args.loglevel)
 
     # Read all the data from the data and reference files.
     logging.info("Opening {} as data file...".format(args.file))
     dfile = h5py.File(args.file, "r", rdcc_nbytes=500 * 1024 ** 2)
+
+    # Read the cfreq and fwidth from the h5py file.
+    cfreq = dfile.attrs["cfreq"]
+    freq_width = dfile.attrs["fwidth"]
+
     # read all datasets in the hf5 file
     keys = list(dfile.keys())
     data = [dfile[key] for key in keys]
@@ -84,7 +88,9 @@ def main():
     rfile = h5py.File(args.reffile, "r", rdcc_nbytes=500 * 1024 ** 2)
     reference = [rfile[key] for key in keys]
 
-    print(reference)
+    # Assert that the data matches.
+    if not (cfreq == rfile.attrs["cfreq"] or freq_width == rfile.attrs["fwidth"]):
+        raise PlasmonicError("The frequencies of the provided files do not match. Exiting.")
 
     logging.info("Reference shape: {}".format(reference[0].shape))
     logging.info("Components: {}".format(keys))
