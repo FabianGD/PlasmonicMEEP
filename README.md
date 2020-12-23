@@ -63,8 +63,8 @@ After installation, you should find three executables, namely:
 mpirun -np 2 plas-meep -r 200 -x 1 -y 1 -o data/
 
 # Calculate the FFT and the field enhancements in batches from the data calculated
-# in the first step. The '-f' and '-w' flags specify the
-plas-field -s 250 -f 1.5 -w 1.5 ./data/fdtd-norm.h5 ./data/fdtd-ref.h5 ./data/freqs.h5
+# in the first step. The '-f' and '-w' flags are not required any more.
+plas-field -s 100 ./data/plas-meep-norm.h5 ./data/plas-meep-ref.h5 ./data/freqs.h5
 
 # Visualize the calculated field enhancement arrays. This will produce a spectrum
 # window first and, after closing it, show the field enhancement maps.
