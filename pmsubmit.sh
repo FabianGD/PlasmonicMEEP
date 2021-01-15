@@ -20,6 +20,6 @@ export TMPDIR=/beegfs/<your-user-name-here>/tmp
 mkdir -p $TMPDIR
 mkdir -p ./$SLURM_JOB_ID
 
-srun -o %j/plmeep-%j-%2s.out mpirun -np 16 plas-meep -r $1 &
+srun -o %j/plmeep-%j-%2s.out mpirun -np 16 plas-meep -r $1 -o $2&
 
 wait
