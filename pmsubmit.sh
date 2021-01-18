@@ -11,15 +11,13 @@
 module purge
 module load tools/python/3.8
 
+eval "$(conda shell.bash hook)"
+
 # Load the pyQD conda environment
 conda activate pmeep
 
-export TMPDIR=/beegfs/<your-user-name-here>/tmp
-# INPUTDIR=/beegfs/lu27wil/scientific-pyqd/science/inputs/2020-12-11b
+export TMPDIR=/beegfs/$USER/tmp
 
 mkdir -p $TMPDIR
-mkdir -p ./$SLURM_JOB_ID
 
-srun -o %j/plmeep-%j-%2s.out mpirun -np 16 plas-meep -r $1 -o $2&
-
-wait
+mpirun plas-meep -r $1 -o /beegfs/$USER/$2

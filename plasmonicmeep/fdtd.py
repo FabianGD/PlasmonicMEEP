@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import meep as mp
 import numpy as np
 from meep import materials
+from mpi4py import MPI
 
 from .model import create_sinus_grating, two_nps
 
@@ -74,7 +75,7 @@ def append_attrs(output, prefix, dset, **kwargs):
     file = Path(output) / f"{prefix}-{dset}.h5"
 
     try:
-        with h5py.File(file, "a") as h5f:
+        with h5py.File(file, "a", driver="mpio", comm=MPI.COMM_WORLD) as h5f:
             for key, val in kwargs.items():
                 h5f.attrs[key] = val
                 print(f"Added custom attribute {key} with value {val} to {h5f!r}")
