@@ -120,9 +120,21 @@ Using MPI version 3.1, 1 processes
 
 **WARNING: Never ever run jobs on the front nodes! Always use output directories on the parallel file system (`/beegfs/$USER/...`)!**
 
-With that out of the way, in the root directory of the repository, you find two files [`pmeep_submit.sh`](./pmeep_submit.sh) and [`pfield_submit.sh`](./pfield_submit.sh). Those files are to be used with the SLURM queuing system.
+With that out of the way, in the root directory of the repository, you find two files [`pmeep_submit.sh`](./pmeep_submit.sh) and [`pfield_submit.sh`](./pfield_submit.sh) for submitting simulation and field enhancement jobs, respectively. Those files are to be used with the SLURM queuing system.
 
-**TODO**
+To submit a classic PlasmonicMEEP job, you need to use `sbatch`:
+
+```bash
+# The first argument is the output directory.
+# The rest are parameters you would like to parse to plas-meep
+sbatch pmeep_submit.sh /beegfs/$USER/<outputdir> -r 400 -x 0.5 -y 0.5
+
+# After this calculation has finished, you need to calculate the field enhancements
+# using the pfield_submit.sh submit script. You may also specify additional arguments
+# in apostrophies
+sbatch pfield_submit.sh /beegfs/$USER/<outputdir>
+
+```
 
 ## Notes
 

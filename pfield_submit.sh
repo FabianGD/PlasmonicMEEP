@@ -19,5 +19,14 @@ conda activate pmeep
 export TMPDIR=/beegfs/$USER/tmp
 mkdir -p $TMPDIR
 
-plas-field $1/plas-meep-norm.h5 $1/plas-meep-ref.h5 $1/pfield.h5 $2
+# Get all the args as an array.
+args=( $@ )
 
+# Get the necessary info
+dir=${A[@]:0:1}
+cargs=${A[@]:1}
+
+cmd="plas-field $dir/plas-meep-norm.h5 $dir/plas-meep-ref.h5 $dir/pfield.h5 $cargs"
+echo $'Issuing the following cmd to SLURM:\n > '$cmd $'\n\n'
+
+$($cmd)

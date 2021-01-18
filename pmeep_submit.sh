@@ -19,5 +19,15 @@ conda activate pmeep
 export TMPDIR=/beegfs/$USER/tmp
 mkdir -p $TMPDIR
 
-mpirun plas-meep -o $1 $2
+# Get all the args as an array.
+args=( $@ )
+
+# Get the necessary info
+dir=${A[@]:0:1}
+cargs=${A[@]:1}
+
+cmd="mpirun plas-meep -o $dir $cargs"
+echo $'Issuing the following cmd to SLURM:\n > '$cmd $'\n\n'
+
+$($cmd)
 
