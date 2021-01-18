@@ -23,8 +23,8 @@ mkdir -p $TMPDIR
 args=( $@ )
 
 # Get the necessary info
-dir=${A[@]:0:1}
-cargs=${A[@]:1}
+dir=${args[@]:0:1}
+cargs=${args[@]:1}
 
 cmd="plas-field $dir/plas-meep-norm.h5 $dir/plas-meep-ref.h5 $dir/pfield.h5 $cargs"
 echo $'Issuing the following cmd to SLURM:\n > '$cmd $'\n\n'

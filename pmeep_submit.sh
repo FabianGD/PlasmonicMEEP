@@ -23,8 +23,8 @@ mkdir -p $TMPDIR
 args=( $@ )
 
 # Get the necessary info
-dir=${A[@]:0:1}
-cargs=${A[@]:1}
+dir=${args[@]:0:1}
+cargs=${args[@]:1}
 
 cmd="mpirun plas-meep -o $dir $cargs"
 echo $'Issuing the following cmd to SLURM:\n > '$cmd $'\n\n'
