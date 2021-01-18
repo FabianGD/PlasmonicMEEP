@@ -17,7 +17,7 @@ eval "$(conda shell.bash hook)"
 conda activate pmeep
 
 export TMPDIR=/beegfs/$USER/tmp
-
 mkdir -p $TMPDIR
 
-mpirun plas-meep -r $1 -o /beegfs/$USER/$2
+mpirun plas-meep -o $1 $2
+
