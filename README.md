@@ -77,6 +77,8 @@ In case of any questions, please, firstly have a look at the issues (including c
 
 ## Usage on the compute cluster ARA (FSU Jena)
 
+### Installation
+
 To make this program easy to use on ARA, I provide a conda environment. To use it, copy (or soft-link) the `.condarc` (conda configuration) [file](./.condarc) to your home directory by running the following command. **Be careful:** If you have a `.condarc` already, it will be overwritten.
 
 ```bash
@@ -113,6 +115,14 @@ $ python3 -c "import meep; print(meep.__version__)"
 Using MPI version 3.1, 1 processes
 1.16.1
 ```
+
+### Running jobs on the cluster
+
+**WARNING: Never ever run jobs on the front nodes! Always use output directories on the parallel file system (`/beegfs/$USER/...`)!**
+
+With that out of the way, in the root directory of the repository, you find two files [`pmeep_submit.sh`](./pmeep_submit.sh) and [`pfield_submit.sh`](./pfield_submit.sh). Those files are to be used with the SLURM queuing system.
+
+**TODO**
 
 ## Notes
 
