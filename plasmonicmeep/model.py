@@ -69,25 +69,22 @@ def create_sinus_grating(
 def two_nps(
     radius: float,
     separation: float,
+    center: mp.Vector3,
     material: mp.Medium,
-    size_x: float,
-    size_y: float,
     y: bool = False,
 ) -> List[mp.Sphere]:
     """
-    Create two nanoparticles used in a simulation
+    Create two spherical nanoparticles used in a simulation.
     """
 
     # Generate the slab coordinates
     if y:
-        center = mp.Vector3(size_x / 4, 0, 0)
-        sphere1_pos = mp.Vector3(center.x - radius - separation, 0, 0)
-        sphere2_pos = mp.Vector3(center.x + radius, 0, 0)
+        sphere1_pos = mp.Vector3(center.x - radius - separation / 2, center.y, 0)
+        sphere2_pos = mp.Vector3(center.x + radius + separation / 2, center.y, 0)
 
     else:
-        center = mp.Vector3(0, size_y / 4, 0)
-        sphere1_pos = mp.Vector3(center.y - radius - separation, 0, 0)
-        sphere2_pos = mp.Vector3(center.y + radius, 0, 0)
+        sphere1_pos = mp.Vector3(center.x, center.y - radius - separation / 2, 0)
+        sphere2_pos = mp.Vector3(center.x, center.y + radius + separation / 2, 0)
 
     # block = mp.Block(block_size, center=block_center, material=material)
     sphere1 = mp.Sphere(center=sphere1_pos, radius=radius, material=material)

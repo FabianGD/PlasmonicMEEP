@@ -250,7 +250,9 @@ def main():
             )
         ]
     else:
-        geometry = [*two_nps(0.05, 0.005, mat, fullx, fully, y=True)]
+        geometry = two_nps(
+            radius=0.05, separation=0.005, center=mp.Vector3(), material=mat, y=True
+        )
 
     sim = mp.Simulation(
         cell_size=cell,

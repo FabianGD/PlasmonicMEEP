@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -x
+#!/usr/bin/env bash
 #SBATCH --job-name=pyQD
 #SBATCH --partition=s_standard
 #SBATCH --ntasks-per-node=4
