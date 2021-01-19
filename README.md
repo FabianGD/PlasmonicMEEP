@@ -129,10 +129,10 @@ To submit a classic PlasmonicMEEP job, you need to use `sbatch`:
 # The rest are parameters you would like to parse to plas-meep
 sbatch pmeep_submit.sh /beegfs/$USER/<outputdir> -r 400 -x 0.5 -y 0.5
 
-# After this calculation has finished, you need to calculate the field enhancements
-# using the pfield_submit.sh submit script. You may also specify additional arguments
-# in apostrophies
-sbatch pfield_submit.sh /beegfs/$USER/<outputdir>
+# After this calculation has finished, you need to calculate the field
+# enhancements using the pfield_submit.sh submit script. You may also specify
+# additional arguments after the output directory
+sbatch pfield_submit.sh /beegfs/$USER/<outputdir> [-s ...]
 
 ```
 

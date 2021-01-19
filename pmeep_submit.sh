@@ -8,13 +8,15 @@
 #SBATCH --mem-per-cpu=3GB
 
 # Load modules
-module purge
-module load tools/python/3.8
+# module purge
+# module load tools/python/3.8
 
 eval "$(conda shell.bash hook)"
 
 # Load the pyQD conda environment
 conda activate pmeep
+
+set -x
 
 export TMPDIR=/beegfs/$USER/tmp
 mkdir -p $TMPDIR
@@ -26,8 +28,4 @@ args=( $@ )
 dir=${args[@]:0:1}
 cargs=${args[@]:1}
 
-cmd="mpirun plas-meep -o $dir $cargs"
-echo $'Issuing the following cmd to SLURM:\n > '$cmd $'\n\n'
-
-$($cmd)
-
+mpirun plas-meep -o $dir $cargs

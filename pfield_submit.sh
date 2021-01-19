@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -x
 #SBATCH --job-name=pyQD
 #SBATCH --partition=s_standard
 #SBATCH --ntasks-per-node=4
@@ -16,6 +16,8 @@ eval "$(conda shell.bash hook)"
 # Load the pyQD conda environment
 conda activate pmeep
 
+set -x
+
 export TMPDIR=/beegfs/$USER/tmp
 mkdir -p $TMPDIR
 
@@ -26,7 +28,4 @@ args=( $@ )
 dir=${args[@]:0:1}
 cargs=${args[@]:1}
 
-cmd="plas-field $dir/plas-meep-norm.h5 $dir/plas-meep-ref.h5 $dir/pfield.h5 $cargs"
-echo $'Issuing the following cmd to SLURM:\n > '$cmd $'\n\n'
-
-$($cmd)
+plas-field $dir/plas-meep-norm.h5 $dir/plas-meep-ref.h5 $dir/pfield.h5 $cargs
