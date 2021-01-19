@@ -36,17 +36,17 @@ def argparsing(**kwargs):
         "-r", "--resolution", type=int, help="Resolution of the simulation, in px / µm."
     )
 
-    args = parser.parse_args(**kwargs)
+    args = parser.parse_args(*args)
 
     return args
 
 
-def main(**kwargs):
+def main(*args):
     """
     Main function for the visualiser
     """
 
-    args = argparsing(**kwargs)
+    args = argparsing(*args)
 
     if args.mplstyle is not None:
         mplstyle = Path(args.mplstyle)
