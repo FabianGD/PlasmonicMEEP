@@ -33,10 +33,10 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O mi
 
 # Now, with conda installed (you might need to reload your terminal), install
 # MEEP and some other libraries
-conda create -n pmeep -c conda-forge pymeep=*=mpi_mpich_* joblib pandas matplotlib h5py
+conda create -n pmeep -c conda-forge pymeep=*=mpi_mpich_* joblib pandas matplotlib h5py mpi4py
 
 # Optional: You can also install the single-core variant using the following command
-conda create -n meep -c conda-forge pymeep joblib pandas matplotlib h5py
+conda create -n meep -c conda-forge pymeep joblib pandas matplotlib h5py mpi4py
 ```
 
 ### Installing PlasmonicMEEP
@@ -77,7 +77,7 @@ In case of any questions, please, firstly have a look at the issues (including c
 
 ## Usage on the compute cluster ARA (FSU Jena)
 
-### Installation
+### Default installation
 
 To make this program easy to use on ARA, I provide a conda environment. To use it, copy (or soft-link) the `.condarc` (conda configuration) [file](./.condarc) to your home directory by running the following command. **Be careful:** If you have a `.condarc` already, it will be overwritten.
 
@@ -116,6 +116,35 @@ Using MPI version 3.1, 1 processes
 1.16.1
 ```
 
+### Custom installation
+
+In case you want to change the PlasmonicMEEP code yourself, you need your own installation
+and your own conda environment. In order to get it to work, you need to do the following:
+
+```bash
+# 1. Unload all the modules that may disturb the installation.
+module purge
+
+# 2. Load the newest Python3 module from the module list
+module load tools/python/3.8
+
+# 3. Create a new environment and install the necessary packages
+conda create -n pmeep -c conda-forge pymeep=*=mpi_mpich_* joblib pandas matplotlib h5py mpi4py
+
+# 4. After installation (this may take a while ...), you can activate your new environment
+# and install the package.
+# 4. a. Clone the upstream repository
+git clone \
+   https://gitlab.com/theoretical-chemistry-jena/quantum-dynamics/plasmonic-meep.git \
+   /beegfs/$USER/plasmonic-meep
+
+# 4. b. Now go to the directory ...
+cd /beegfs/$USER/plasmonic-meep
+
+# 4. c. ... and install the package using pip. The "-e" allows you to edit the files directly.
+pip install -e .
+```
+
 ### Running jobs on the cluster
 
 **WARNING: Never ever run jobs on the front nodes! Always use output directories on the parallel file system (`/beegfs/$USER/...`)!**
@@ -127,7 +156,7 @@ To submit a classic PlasmonicMEEP job, you need to use `sbatch`:
 ```bash
 # The first argument is the output directory.
 # The rest are parameters you would like to parse to plas-meep
-sbatch pmeep_submit.sh /beegfs/$USER/<outputdir> -r 400 -x 0.5 -y 0.5
+sbatch pmeep_submit.sh /beegfs/$USER/<outputdir> -r 400 -x 0.5 -y 0.5 [...]
 
 # After this calculation has finished, you need to calculate the field
 # enhancements using the pfield_submit.sh submit script. You may also specify

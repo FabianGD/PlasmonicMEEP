@@ -8,8 +8,8 @@
 #SBATCH --mem-per-cpu=3GB
 
 # Load modules
-# module purge
-# module load tools/python/3.8
+module purge
+module load tools/python/3.8
 
 eval "$(conda shell.bash hook)"
 
