@@ -14,7 +14,7 @@ import pandas as pd
 from .multiviewer import multi_slice_viewer
 
 
-def argparsing():
+def argparsing(**kwargs):
     """
     Module-level argparsing
     """
@@ -36,16 +36,17 @@ def argparsing():
         "-r", "--resolution", type=int, help="Resolution of the simulation, in px / µm."
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(**kwargs)
 
     return args
 
 
-def main():
+def main(**kwargs):
     """
     Main function for the visualiser
     """
-    args = argparsing()
+
+    args = argparsing(**kwargs)
 
     if args.mplstyle is not None:
         mplstyle = Path(args.mplstyle)
