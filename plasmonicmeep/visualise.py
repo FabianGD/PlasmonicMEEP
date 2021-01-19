@@ -14,7 +14,7 @@ import pandas as pd
 from .multiviewer import multi_slice_viewer
 
 
-def argparsing(**kwargs):
+def argparsing(*args):
     """
     Module-level argparsing
     """
