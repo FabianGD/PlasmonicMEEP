@@ -131,17 +131,19 @@ module load tools/python/3.8
 # 3. Create a new environment and install the necessary packages
 conda create -n pmeep -c conda-forge pymeep=*=mpi_mpich_* joblib pandas matplotlib h5py mpi4py
 
-# 4. After installation (this may take a while ...), you can activate your new environment
-# and install the package.
-# 4. a. Clone the upstream repository
+# 4. After installation (this may take a while ...), you can activate your new environment ...
+conda activate pmeep
+
+# 5. ... and install the package.
+# 5. a. Clone the upstream repository
 git clone \
    https://gitlab.com/theoretical-chemistry-jena/quantum-dynamics/plasmonic-meep.git \
    /beegfs/$USER/plasmonic-meep
 
-# 4. b. Now go to the directory ...
+# 5. b. Now go to the directory ...
 cd /beegfs/$USER/plasmonic-meep
 
-# 4. c. ... and install the package using pip. The "-e" allows you to edit the files directly.
+# 5. c. ... and install the package using pip. The "-e" allows you to edit the files directly.
 pip install -e .
 ```
 
