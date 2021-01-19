@@ -110,6 +110,8 @@ def main():
 
     print(args.resolution)
 
+    data = data.transpose(1, 0, -1)
+
     # visualize data
     multi_slice_viewer(
         data[skip_x:-skip_x, skip_y:-skip_y, :],

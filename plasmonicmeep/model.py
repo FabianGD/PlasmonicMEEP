@@ -79,12 +79,12 @@ def two_nps(
 
     # Generate the slab coordinates
     if y:
-        sphere1_pos = mp.Vector3(center.x - radius - separation / 2, center.y, 0)
-        sphere2_pos = mp.Vector3(center.x + radius + separation / 2, center.y, 0)
-
-    else:
         sphere1_pos = mp.Vector3(center.x, center.y - radius - separation / 2, 0)
         sphere2_pos = mp.Vector3(center.x, center.y + radius + separation / 2, 0)
+
+    else:
+        sphere1_pos = mp.Vector3(center.x - radius - separation / 2, center.y, 0)
+        sphere2_pos = mp.Vector3(center.x + radius + separation / 2, center.y, 0)
 
     # block = mp.Block(block_size, center=block_center, material=material)
     sphere1 = mp.Sphere(center=sphere1_pos, radius=radius, material=material)

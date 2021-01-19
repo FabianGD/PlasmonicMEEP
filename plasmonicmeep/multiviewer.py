@@ -26,7 +26,7 @@ def remove_keymap_conflicts(new_keys_set):
                 keys.remove(key)
 
 
-def multi_slice_viewer(volume, index_function=lambda x: x):
+def multi_slice_viewer(volume, index_function=lambda x: x, resolution=None):
     """
     Entry function
     """
@@ -40,8 +40,11 @@ def multi_slice_viewer(volume, index_function=lambda x: x):
     ax.cbar = None
     ax.index = volume.shape[-1] // 2
 
+    ax.set_xlabel("x / px")
+    ax.set_ylabel("y / px")
+
     # Plot the first frame
-    img = ax.imshow(volume[:, :, ax.index])
+    img = ax.imshow(volume[:, :, ax.index], origin="lower")
     ax.cbar = plt.colorbar(img, ax=ax)
 
     # Partially apply function arguments
