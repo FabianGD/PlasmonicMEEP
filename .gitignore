@@ -5,3 +5,4 @@ img/**
 !img/sketches/*.svg
 *.egg-info
 test
+/spectra.svg
