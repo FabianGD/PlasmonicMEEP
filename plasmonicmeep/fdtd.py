@@ -75,6 +75,7 @@ def append_attrs(output, prefix, dset, **kwargs):
     file = Path(output) / f"{prefix}-{dset}.h5"
 
     try:
+        # TODO: Fix for non-MPI run Python.
         with h5py.File(file, "a", driver="mpio", comm=MPI.COMM_WORLD) as h5f:
             for key, val in kwargs.items():
                 h5f.attrs[key] = val
@@ -211,7 +212,7 @@ def main():
     # save incident power for transmission plane
     straight_tran_flux = mp.get_fluxes(tran)
 
-    # Append cfreq and fwidth as attrs.
+    # This appends the calc attributes to the HDF5 file.
     append_attrs(
         output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
     )
@@ -289,6 +290,7 @@ def main():
         until_after_sources=mp.stop_when_fields_decayed(10, comp, point, 1e-2),
     )
 
+    # This appends the calc attributes to the HDF5 file.
     append_attrs(
         output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
     )
@@ -315,9 +317,7 @@ def main():
         ax.grid(True)
 
         fig.tight_layout()
-        fig.savefig("spectra.svg")
-
-        plt.show()
+        fig.savefig(output_path / "ReflTransLoss.pdf", dpi=300)
 
 
 if __name__ == "__main__":
