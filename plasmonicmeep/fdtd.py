@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import h5py
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import meep as mp
 import numpy as np
@@ -59,6 +60,16 @@ def argparsing():
         action="store_true",
         help="Create the sinus grating geometry for benchmarking.",
     )
+    parser.add_argument(
+        "--spectrum",
+        "-s",
+        action="store_true",
+        help=(
+            "At the end of the simulation, plot and save transmission/reflectance/loss spectra."
+            "This might fail for MPI runs or on clusters."
+        ),
+    )
+
     return parser.parse_args()
 
 
@@ -307,7 +318,9 @@ def main():
     tran_spectrum = tran_flux / straight_tran_flux
     loss_spectrum = 1 - refl_spectrum - tran_spectrum
 
-    if mp.am_master():
+    if args.spectrum and mp.am_master():
+        mpl.use("agg")
+
         fig, ax = plt.subplots()
 
         ax.plot(wavelengths, refl_spectrum, color="blue", label="reflectance")
