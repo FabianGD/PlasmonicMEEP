@@ -51,6 +51,6 @@ setup(
     classifiers=CLASSIFIERS,
     zip_safe=False,
     license=LICENSE,
-    include_package_data=True,
+    include_package_data=False,
     version=VERSION,
 )
