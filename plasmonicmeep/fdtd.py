@@ -6,12 +6,12 @@ import argparse
 import sys
 from pathlib import Path
 
-import h5py
 import matplotlib.pyplot as plt
 import meep as mp
 import numpy as np
 from meep import materials
 
+from .utils import append_attrs
 from .model import create_sinus_grating, two_nps
 
 
@@ -36,7 +36,7 @@ def argparsing():
         "-y",
         "--sizey",
         type=float,
-        default=2.0,
+        default=1.0,
         help="The size of the box in µm in the y direction.",
     )
     parser.add_argument(
@@ -46,6 +46,26 @@ def argparsing():
         default=150,
         help="The resolution of the box (nr. of pixels per µm?)",
     )
+    parser.add_argument(
+        "-f", "--frequency",
+        type=float,
+        default=1.5,
+        help=(
+            "Change the central frequency of the incident laser field."
+            "Frequency is given in units of 1/µm."
+        )
+    )
+    parser.add_argument(
+        "-w", "--freq-width",
+        type=float,
+        default=1.5,
+        help=(
+            "Change the frequency width of the incident laser field."
+            "Pulse with is given in units of µm."
+        )
+    )
+
+
     parser.add_argument(
         "-g",
         "--show-geometry",
@@ -58,29 +78,14 @@ def argparsing():
         action="store_true",
         help="Create the sinus grating geometry for benchmarking.",
     )
+    parser.add_argument(
+        "-s",
+        "--show-spectra",
+        action="store_false",
+        help="Whether to show spectra in a GUI window. Default: Do not show."
+    )
+
     return parser.parse_args()
-
-
-def vec3_to_nparray(vec):
-    """
-    Utility to convert a Vector3 to a (3)-shaped np.ndarray
-    """
-    return np.asarray([vec.x, vec.y, vec.z])
-
-
-def append_attrs(output, prefix, dset, **kwargs):
-    """Custom function to append attributes to the h5py data files."""
-
-    file = Path(output) / f"{prefix}-{dset}.h5"
-
-    try:
-        with h5py.File(file, "a") as h5f:
-            for key, val in kwargs.items():
-                h5f.attrs[key] = val
-                print(f"Added custom attribute {key} with value {val} to {h5f!r}")
-
-    except Exception as e:
-        raise Exception(f"Errored with msg: {e}") from e
 
 
 def main():
@@ -89,6 +94,13 @@ def main():
     """
 
     args = argparsing()
+
+    # Set up output path, if not already existent.
+    output_path = Path(args.output).resolve()
+    if not output_path.is_dir():
+        output_path.mkdir(parents=True, exist_ok=True)
+    output = str(output_path)
+
 
     # Inner size
     sizex = args.sizex
@@ -114,9 +126,9 @@ def main():
     # Size dimension a --> Time dimension a / c
 
     # Frequency has dim [c/a]
-    cfreq = 1.5
+    cfreq = args.frequency
     # Frequency width of the Gaussian pulse
-    fwidth = 1.5  # in units of µm
+    fwidth = args.freq_width  # in units of µm
 
     # Field component to monitor
     comp = mp.Hz
@@ -134,11 +146,6 @@ def main():
     # Absorber on grating side because of field divergence at metal/pml interface
     # pml_layers = [mp.PML(pml_th, direction=mp.X), mp.Absorber(pml_th, direction=mp.Y)]
     pml_layers = [mp.PML(pml_th, direction=mp.ALL)]
-
-    output_path = Path(args.output).resolve()
-    if not output_path.is_dir():
-        output_path.mkdir(parents=True, exist_ok=True)
-    output = str(output_path)
 
     # empty cell for reference run
     geometry = []
@@ -316,7 +323,8 @@ def main():
         fig.tight_layout()
         fig.savefig("spectra.svg")
 
-        plt.show()
+        if args.show_spectra:
+            plt.show()
 
 
 if __name__ == "__main__":
