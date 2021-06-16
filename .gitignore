@@ -5,4 +5,8 @@ img/**
 !img/sketches/*.svg
 *.egg-info
 test
+<<<<<<< HEAD
 /spectra.svg
+=======
+nix/result
+>>>>>>> 78df089 (Nix integration including two nix shells, one for dev and one for)

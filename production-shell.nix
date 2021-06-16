@@ -1,14 +1,13 @@
-{ pkgs ? import ./pkgs.nix }:
+{ pkgs ? import ./nix/pkgs.nix }:
 
 let
-    plasmonic-meep = (import ./default.nix {}).plasmonic-meep;
+    plasmonic-meep = (import ./nix/default.nix {}).plasmonic-meep;
 
 in
     with pkgs; mkShell {
         buildInputs = [
             git
 
-            python3Packages.pygobject
             python3Packages.black
             python3Packages.pylint
 

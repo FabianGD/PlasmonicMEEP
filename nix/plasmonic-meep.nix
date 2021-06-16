@@ -17,7 +17,7 @@ buildPythonApplication rec {
         joblib
     ];
 
-
+  doCheck = false;
 
     meta = {
         description = "Set of scripts for calculation of plasmon resonance/electric field enhancement on different structures";
