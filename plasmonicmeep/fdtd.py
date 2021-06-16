@@ -14,6 +14,7 @@ import numpy as np
 from meep import materials
 from mpi4py import MPI
 
+from .utils import append_attrs
 from .model import create_sinus_grating, two_nps
 
 
@@ -38,7 +39,7 @@ def argparsing():
         "-y",
         "--sizey",
         type=float,
-        default=2.0,
+        default=1.0,
         help="The size of the box in µm in the y direction.",
     )
     parser.add_argument(
@@ -48,6 +49,26 @@ def argparsing():
         default=150,
         help="The resolution of the box (nr. of pixels per µm?)",
     )
+    parser.add_argument(
+        "-f", "--frequency",
+        type=float,
+        default=1.5,
+        help=(
+            "Change the central frequency of the incident laser field."
+            "Frequency is given in units of 1/µm."
+        )
+    )
+    parser.add_argument(
+        "-w", "--freq-width",
+        type=float,
+        default=1.5,
+        help=(
+            "Change the frequency width of the incident laser field."
+            "Pulse with is given in units of µm."
+        )
+    )
+
+
     parser.add_argument(
         "-g",
         "--show-geometry",
@@ -103,6 +124,13 @@ def main():
 
     args = argparsing()
 
+    # Set up output path, if not already existent.
+    output_path = Path(args.output).resolve()
+    if not output_path.is_dir():
+        output_path.mkdir(parents=True, exist_ok=True)
+    output = str(output_path)
+
+
     # Inner size
     sizex = args.sizex
     sizey = args.sizey
@@ -127,9 +155,9 @@ def main():
     # Size dimension a --> Time dimension a / c
 
     # Frequency has dim [c/a]
-    cfreq = 1.5
+    cfreq = args.frequency
     # Frequency width of the Gaussian pulse
-    fwidth = 1.5  # in units of µm
+    fwidth = args.freq_width  # in units of µm
 
     # Field component to monitor
     comp = mp.Hz
@@ -147,11 +175,6 @@ def main():
     # Absorber on grating side because of field divergence at metal/pml interface
     # pml_layers = [mp.PML(pml_th, direction=mp.X), mp.Absorber(pml_th, direction=mp.Y)]
     pml_layers = [mp.PML(pml_th, direction=mp.ALL)]
-
-    output_path = Path(args.output).resolve()
-    if not output_path.is_dir():
-        output_path.mkdir(parents=True, exist_ok=True)
-    output = str(output_path)
 
     # empty cell for reference run
     geometry = []
@@ -332,7 +355,14 @@ def main():
         ax.grid(True)
 
         fig.tight_layout()
+<<<<<<< HEAD
         fig.savefig(output_path / "ReflTransLoss.pdf", dpi=300)
+=======
+        fig.savefig("spectra.svg")
+
+        if args.show_spectra:
+            plt.show()
+>>>>>>> 7d0490f... Added more options to the argparser, to change frequency and -width from the CLI.
 
 
 if __name__ == "__main__":
