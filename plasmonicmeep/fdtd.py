@@ -48,24 +48,25 @@ def argparsing():
         help="The resolution of the box (nr. of pixels per µm?)",
     )
     parser.add_argument(
-        "-f", "--frequency",
+        "-f",
+        "--frequency",
         type=float,
         default=1.5,
         help=(
             "Change the central frequency of the incident laser field."
             "Frequency is given in units of 1/µm."
-        )
+        ),
     )
     parser.add_argument(
-        "-w", "--freq-width",
+        "-w",
+        "--freq-width",
         type=float,
         default=1.5,
         help=(
             "Change the frequency width of the incident laser field."
             "Pulse with is given in units of µm."
-        )
+        ),
     )
-
 
     parser.add_argument(
         "-g",
@@ -82,11 +83,17 @@ def argparsing():
     parser.add_argument(
         "--spectrum",
         "-s",
+<<<<<<< HEAD
         action="store_true",
         help=(
             "At the end of the simulation, plot and save transmission/reflectance/loss spectra."
             "This might fail for MPI runs or on clusters."
         ),
+=======
+        "--show-spectra",
+        action="store_false",
+        help="Whether to show spectra in a GUI window. Default: Do not show.",
+>>>>>>> 350609b... Started implementing classes using attrs.
     )
 
     return parser.parse_args()
@@ -104,7 +111,6 @@ def main():
     if not output_path.is_dir():
         output_path.mkdir(parents=True, exist_ok=True)
     output = str(output_path)
-
 
     # Inner size
     sizex = args.sizex
@@ -259,9 +265,15 @@ def main():
             )
         ]
     else:
+<<<<<<< HEAD
         geometry = two_nps(
             radius=0.05, separation=0.005, center=mp.Vector3(), material=mat, y=True
         )
+=======
+        # TODO I need to come up with a better solution for
+        # TODO introducing nanoparticle structures.
+        geometry = two_nps(0.05, 0.005, mat, fullx, fully, y=True)
+>>>>>>> 350609b... Started implementing classes using attrs.
 
     sim = mp.Simulation(
         cell_size=cell,

@@ -7,6 +7,8 @@ let
     scipy
     matplotlib
     h5py
+    pyyaml
+    attrs
     joblib
     black
     pylint
