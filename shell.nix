@@ -7,8 +7,10 @@ let
     scipy
     matplotlib
     h5py
+    pyyaml
+    attrs
     joblib
-    black 
+    black
     pylint
     ipykernel
     ipympl

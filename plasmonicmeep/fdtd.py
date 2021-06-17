@@ -47,24 +47,25 @@ def argparsing():
         help="The resolution of the box (nr. of pixels per µm?)",
     )
     parser.add_argument(
-        "-f", "--frequency",
+        "-f",
+        "--frequency",
         type=float,
         default=1.5,
         help=(
             "Change the central frequency of the incident laser field."
             "Frequency is given in units of 1/µm."
-        )
+        ),
     )
     parser.add_argument(
-        "-w", "--freq-width",
+        "-w",
+        "--freq-width",
         type=float,
         default=1.5,
         help=(
             "Change the frequency width of the incident laser field."
             "Pulse with is given in units of µm."
-        )
+        ),
     )
-
 
     parser.add_argument(
         "-g",
@@ -82,7 +83,7 @@ def argparsing():
         "-s",
         "--show-spectra",
         action="store_false",
-        help="Whether to show spectra in a GUI window. Default: Do not show."
+        help="Whether to show spectra in a GUI window. Default: Do not show.",
     )
 
     return parser.parse_args()
@@ -100,7 +101,6 @@ def main():
     if not output_path.is_dir():
         output_path.mkdir(parents=True, exist_ok=True)
     output = str(output_path)
-
 
     # Inner size
     sizex = args.sizex
@@ -255,7 +255,9 @@ def main():
             )
         ]
     else:
-        geometry = [*two_nps(0.05, 0.005, mat, fullx, fully, y=True)]
+        # TODO I need to come up with a better solution for
+        # TODO introducing nanoparticle structures.
+        geometry = two_nps(0.05, 0.005, mat, fullx, fully, y=True)
 
     sim = mp.Simulation(
         cell_size=cell,
