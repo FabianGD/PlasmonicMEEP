@@ -22,7 +22,9 @@ The scripts are originally taken from [Trel725/plasmon-meep](https://github.com/
 
 To install the package, first install [MEEP](https://meep.readthedocs.io) using the [install instructions](https://meep.readthedocs.io/en/latest/Installation/) on their website. For the calculations proposed here it's re recommended to install the parallel version via **conda**.
 
-### Installing conda and MEEP
+### Installing the dependencies
+
+#### The standard way
 
 Basically, on a Unix or WSL system, all you need to run the following commands in order. For more detailed instructions, see the [Anaconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) and [MEEP](https://meep.readthedocs.io) homepages
 
@@ -39,7 +41,23 @@ conda create -n pmeep -c conda-forge pymeep=*=mpi_mpich_* joblib pandas matplotl
 conda create -n meep -c conda-forge pymeep joblib pandas matplotlib h5py
 ```
 
+#### The functional way using nix
+
+To drop into a production shell with all the entrypoints correctly set:
+
+```bash
+nix-shell production-shell.nix
+```
+
+To install the package to have it outside of a nix shell:
+
+```bash
+nix-env -f ./nix/default.nix -i plasmonic-meep
+```
+
 ### Installing PlasmonicMEEP
+
+#### Standard `pip` install
 
 As a second step, `cd` to the package directory and install the package using pip. This is somewhat inconsistent, I'm working on a fix. This installs all the entrypoints to your current conda environment, so be sure to have the correct environment activated.
 
@@ -52,6 +70,10 @@ After installation, you should find three executables, namely:
 - `plas-meep`, which does the FDTD calculations,
 - `plas-field`, which fourier transforms the time series data and calculates field enhancements,
 - `plas-vis`, that visualises the calculated enhancements as a spectrum and as a map.
+
+#### Installation via nix
+
+
 
 ## Example usage
 
