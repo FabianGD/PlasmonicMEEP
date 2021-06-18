@@ -83,17 +83,11 @@ def argparsing():
     parser.add_argument(
         "--spectrum",
         "-s",
-<<<<<<< HEAD
         action="store_true",
         help=(
             "At the end of the simulation, plot and save transmission/reflectance/loss spectra."
             "This might fail for MPI runs or on clusters."
         ),
-=======
-        "--show-spectra",
-        action="store_false",
-        help="Whether to show spectra in a GUI window. Default: Do not show.",
->>>>>>> 350609b... Started implementing classes using attrs.
     )
 
     return parser.parse_args()
@@ -265,15 +259,9 @@ def main():
             )
         ]
     else:
-<<<<<<< HEAD
-        geometry = two_nps(
-            radius=0.05, separation=0.005, center=mp.Vector3(), material=mat, y=True
-        )
-=======
         # TODO I need to come up with a better solution for
         # TODO introducing nanoparticle structures.
         geometry = two_nps(0.05, 0.005, mat, fullx, fully, y=True)
->>>>>>> 350609b... Started implementing classes using attrs.
 
     sim = mp.Simulation(
         cell_size=cell,

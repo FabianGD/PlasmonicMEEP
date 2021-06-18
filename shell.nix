@@ -12,8 +12,13 @@ let
     joblib
     black
     pylint
+
     ipykernel
     ipympl
+
+    pycairo
+    pygobject3
+
   ]);
 
   plasmonicPython = (import ./nix/default.nix {}).plasmonic-meep;
