@@ -12,13 +12,24 @@ let
     joblib
     black
     pylint
+
     ipykernel
     ipympl
+
+    pycairo
+    pygobject3
+
   ]);
 in
     with pkgs; mkShell {
         buildInputs = [
             git
+
+            cairo
+
+            gobjectIntrospection
+            gtk3-x11
+
             customPython
         ];
     }
