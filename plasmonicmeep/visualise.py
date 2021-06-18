@@ -9,9 +9,11 @@ from pathlib import Path
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
-from .multiviewer import multi_slice_viewer
+try:
+    from .multiviewer import multi_slice_viewer
+except ImportError:
+    from multiviewer import multi_slice_viewer
 
 
 def argparsing(*args):
@@ -31,9 +33,6 @@ def argparsing(*args):
     parser.add_argument("-k", "--xyskip", type=int, help="Number of pixels to skip")
     parser.add_argument(
         "-p", "--mplstyle", type=str, help="Give a matplotlib style to use. Optional."
-    )
-    parser.add_argument(
-        "-r", "--resolution", type=int, help="Resolution of the simulation, in px / µm."
     )
 
     args = parser.parse_args(*args)
@@ -87,6 +86,11 @@ def main(*args):
 
     # Save the spectrum to file
     if args.save:
+        try:
+            import pandas as pd  # pylint: disable=import-outside-toplevel
+        except ImportError:
+            print("Could not import pandas. It's required for output of xls and csv data.")
+
         df = pd.DataFrame()
         df["lambda"] = 1000 / freqs[skip_freq:]
         df["enhancement"] = enhancement[skip_freq:]
@@ -109,15 +113,12 @@ def main(*args):
     fig.tight_layout()
     plt.show()
 
-    print(args.resolution)
-
     data = data.transpose(1, 0, -1)
 
     # visualize data
     multi_slice_viewer(
         data[skip_x:-skip_x, skip_y:-skip_y, :],
         index_function=lambda x: 1000 / freqs[x],
-        resolution=args.resolution
     )
 
     plt.show()

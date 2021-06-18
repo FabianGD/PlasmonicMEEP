@@ -9,4 +9,8 @@ test
 /spectra.svg
 =======
 nix/result
+<<<<<<< HEAD
 >>>>>>> 78df089 (Nix integration including two nix shells, one for dev and one for)
+=======
+example.py
+>>>>>>> 47df590... Tiny tweaks on the visualise.py --> removed the resolution arg.
