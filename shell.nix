@@ -2,13 +2,13 @@
 
 let
   customPython = pkgs.python3.withPackages(ps: with ps; [
-    pkgs.qchem.meep
+    pkgs.qchem.python3.pkgs.meep
     numpy
     scipy
     matplotlib
     h5py
     joblib
-    black 
+    black
     pylint
     ipykernel
     ipympl
@@ -16,7 +16,8 @@ let
 in
     with pkgs; mkShell {
         buildInputs = [
-            git
-            customPython
+          which
+          git
+          customPython
         ];
     }
