@@ -6,3 +6,4 @@ img/**
 *.egg-info
 test
 nix/result
+example.py
