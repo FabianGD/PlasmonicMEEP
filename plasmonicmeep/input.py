@@ -52,6 +52,7 @@ class Cell:
 
     """
     size: Point2D = attr.ib()
+    resolution: int = attr.ib()
     origin: str = attr.ib(validator=attr.validators.in_(["center", "lower left", "upper left"]))
 
 
@@ -62,6 +63,9 @@ def read_geom(file: Path):
 
     with open(file, "r") as f:
         data = yaml.load(f.read(), loader=yaml.FullLoader)
+
+    for key, value in data.items():
+        pass
 
 
 if __name__ == "__main__":
@@ -81,3 +85,4 @@ if __name__ == "__main__":
         anchor:
         material:
     """
+
