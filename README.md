@@ -20,11 +20,27 @@ The scripts are originally taken from [Trel725/plasmon-meep](https://github.com/
 
 ## Installation
 
-To install the package, first install [MEEP](https://meep.readthedocs.io) using the [install instructions](https://meep.readthedocs.io/en/latest/Installation/) on their website. For the calculations proposed here it's re recommended to install the parallel version via **conda**.
+### Installation using Nix (the more reliable way)
 
-### Installing the dependencies
+First, if not already done, install Nix, the functional package manager from [here](https://nixos.org/download.html#nix-quick-install).
 
-#### The standard way
+Then, to drop into a production shell with all the entrypoints and dependencies correctly set:
+
+```bash
+nix-shell -A production
+```
+
+To install the package to have it outside of a nix shell:
+
+```bash
+nix-env -f ./nix/default.nix -i plasmonic-meep
+```
+
+### The standard (old) way
+
+To install the package classically, first install [MEEP](https://meep.readthedocs.io) using the [install instructions](https://meep.readthedocs.io/en/latest/Installation/) on their website. For the calculations proposed here it's re recommended to install the parallel version via **conda**.
+
+#### Installing dependencies
 
 Basically, on a Unix or WSL system, all you need to run the following commands in order. For more detailed instructions, see the [Anaconda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) and [MEEP](https://meep.readthedocs.io) homepages
 
@@ -41,23 +57,7 @@ conda create -n pmeep -c conda-forge pymeep=*=mpi_mpich_* joblib pandas matplotl
 conda create -n meep -c conda-forge pymeep joblib pandas matplotlib h5py
 ```
 
-#### The functional way using nix
-
-To drop into a production shell with all the entrypoints correctly set:
-
-```bash
-nix-shell production-shell.nix
-```
-
-To install the package to have it outside of a nix shell:
-
-```bash
-nix-env -f ./nix/default.nix -i plasmonic-meep
-```
-
-### Installing PlasmonicMEEP
-
-#### Standard `pip` install
+#### Install the scripts via pip
 
 As a second step, `cd` to the package directory and install the package using pip. This is somewhat inconsistent, I'm working on a fix. This installs all the entrypoints to your current conda environment, so be sure to have the correct environment activated.
 
@@ -71,9 +71,23 @@ After installation, you should find three executables, namely:
 - `plas-field`, which fourier transforms the time series data and calculates field enhancements,
 - `plas-vis`, that visualises the calculated enhancements as a spectrum and as a map.
 
-#### Installation via nix
 
+### Install for development
 
+The preferred way to install dependencies for development is using nix, see above.
+To drop into a development shell (that skips setting entrypoints, as a
+editable package would not be "pure" (in the FP sense of pure)),just run the
+following in the root directory of the repo:
+
+```bash
+nix-shell -A develop
+```
+
+To update the git repositories used for querying the dependencies, run in the repo:
+
+```bash
+nix-shell -p niv --run "niv update"
+```
 
 ## Example usage
 
@@ -99,7 +113,10 @@ In case of any questions, please, firstly have a look at the issues (including c
 
 ## Usage on the compute cluster ARA (FSU Jena)
 
-To make this program easy to use on ARA, I provide a conda environment. To use it, copy (or soft-link) the `.condarc` (conda configuration) [file](./.condarc) to your home directory by running the following command. **Be careful:** If you have a `.condarc` already, it will be overwritten.
+To make this program easy to use on ARA, I provide a conda environment on the cluster.
+To use it, copy (or soft-link) the `.condarc` (conda configuration) [file](./.condarc)
+to your home directory by running the following command. **Be careful:** If you have
+a `.condarc` already, it will be overwritten.
 
 ```bash
 cp .condarc ~/.condarc
@@ -138,5 +155,5 @@ Using MPI version 3.1, 1 processes
 
 ## Notes
 
-The [multiviewer.py](./src/multiviewer.py) module is taken and modified
+The [multiviewer.py](./plasmonicmeep/multiviewer.py) module is taken and modified
 from [Datacamp](https://www.datacamp.com/community/tutorials/matplotlib-3d-volumetric-data).
