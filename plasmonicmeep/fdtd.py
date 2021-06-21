@@ -6,13 +6,11 @@ import argparse
 import sys
 from pathlib import Path
 
-import h5py
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import meep as mp
 import numpy as np
 from meep import materials
-from mpi4py import MPI
 
 from .utils import append_attrs
 from .model import create_sinus_grating, two_nps
