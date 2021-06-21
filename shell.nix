@@ -1,7 +1,7 @@
 { pkgs ? import ./nix/pkgs.nix }:
 
 let
-  customPython = pkgs.python3.withPackages(ps: with ps; [
+  devPython = pkgs.python3.withPackages(ps: with ps; [
     pkgs.qchem.python3.pkgs.meep
     numpy
     scipy
@@ -13,11 +13,36 @@ let
     ipykernel
     ipympl
   ]);
+
+  plasmonicPython = (import ./nix/default.nix {}).plasmonic-meep;
+
 in
-    with pkgs; mkShell {
+  {
+    develop =
+      with pkgs; mkShell {
         buildInputs = [
           which
           git
-          customPython
+
+          # SSH is required for running with MPI
+          openssh
+
+          # The custom-linked python
+          devPython
         ];
-    }
+    };
+    production =
+      with pkgs; mkShell {
+        buildInputs = [
+          which
+          git
+
+          # SSH is required for running with MPI
+          ssh
+
+          # The custom-linked python
+          plasmonicPython
+        ];
+    };
+  }
+
