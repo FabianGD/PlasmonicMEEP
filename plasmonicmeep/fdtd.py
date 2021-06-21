@@ -94,29 +94,6 @@ def argparsing():
     return parser.parse_args()
 
 
-def vec3_to_nparray(vec):
-    """
-    Utility to convert a Vector3 to a (3)-shaped np.ndarray
-    """
-    return np.asarray([vec.x, vec.y, vec.z])
-
-
-def append_attrs(output, prefix, dset, **kwargs):
-    """Custom function to append attributes to the h5py data files."""
-
-    file = Path(output) / f"{prefix}-{dset}.h5"
-
-    try:
-        # TODO: Fix for non-MPI run Python.
-        with h5py.File(file, "a", driver="mpio", comm=MPI.COMM_WORLD) as h5f:
-            for key, val in kwargs.items():
-                h5f.attrs[key] = val
-                print(f"Added custom attribute {key} with value {val} to {h5f!r}")
-
-    except Exception as e:
-        raise Exception(f"Errored with msg: {e}") from e
-
-
 def main():
     """
     Main computation
@@ -355,14 +332,10 @@ def main():
         ax.grid(True)
 
         fig.tight_layout()
-<<<<<<< HEAD
         fig.savefig(output_path / "ReflTransLoss.pdf", dpi=300)
-=======
-        fig.savefig("spectra.svg")
 
         if args.show_spectra:
             plt.show()
->>>>>>> 7d0490f... Added more options to the argparser, to change frequency and -width from the CLI.
 
 
 if __name__ == "__main__":
