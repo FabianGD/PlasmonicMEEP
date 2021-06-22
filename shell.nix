@@ -12,6 +12,11 @@ let
     pylint
     ipykernel
     ipympl
+    pyyaml
+    pint
+    pycairo
+    pygobject3
+
   ]);
 
   plasmonicPython = (import ./nix/default.nix {}).plasmonic-meep;
@@ -24,6 +29,8 @@ in
           which
           git
 
+          gobject-introspection
+          gtk3-x11
           # SSH is required for running with MPI
           openssh
 
