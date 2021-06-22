@@ -8,3 +8,4 @@ test
 /spectra.svg
 nix/result
 example.py
+!data/vis-input.yaml
