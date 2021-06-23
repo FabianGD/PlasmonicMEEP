@@ -127,6 +127,7 @@ def main():
         ax.set_xlabel(f"Coordinate {direction} / px")
         ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
 
+        h5f.close()
 
     ax.legend()
 
