@@ -2,13 +2,15 @@ mplstyle: null
 direction: x
 
 files:
-  - label: Triangle,
+  - label: Triangle
     file: /scratch/projects/plasmon-meep/data/fine/fine_freq.h5
+    resolution: 2000
     skip: 500
     freq: 600 nm
 
   - label: Spheres
     file: /scratch/projects/plasmon-meep/data/fine/fine_freq.h5
-    skip: 500
+    resolution: 2000
+    skip: 400
     freq: 600 nm
 

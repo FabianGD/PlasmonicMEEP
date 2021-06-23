@@ -79,10 +79,13 @@ def main():
     for input_dict in inputs["files"]:
 
         file = Path(input_dict["file"])
+        resolution = int(input_dict["resolution"])
         label = str(input_dict["label"])
-        xyskip = int(input_dict.get("skip", 30))
         approx_freq = pint.Quantity(input_dict.get("freq", None)).to("nm", "sp").m
         print(approx_freq)
+
+        xyskip = int(input_dict.get("skip", 30))
+
         # Prepare frequency h5 file
         h5f = h5py.File(file, "r")
 
@@ -90,7 +93,6 @@ def main():
         dset = [h5f[key] for key in keys]
         # There should not be any more datasets
         dset = dset[0]
-
 
         # Get the frequency info
         freqs = dset.attrs["freqs"]
@@ -107,14 +109,26 @@ def main():
         midx_idx = (dset.shape[0] - 2 * skip_x) // 2
         midy_idx = (dset.shape[1] - 2 * skip_y) // 2
 
+        nr_of_px_x = dset.shape[0] - skip_x * 2
+        nr_of_px_y = dset.shape[1] - skip_x * 2
+
         if direction == "y":
-            ax.plot(dset[midx_idx, skip_y:-skip_y, freq_idx], label=label)
+            xarr = 1000 * np.arange(nr_of_px_y) / (resolution)
+            xarr -= np.max(xarr) / 2
+
+            ax.plot(xarr, dset[midx_idx, skip_y:-skip_y, freq_idx], label=label)
 
         else:
-            ax.plot(dset[skip_x:-skip_x, midy_idx, freq_idx], label=label)
+            xarr = 1000 * np.arange(nr_of_px_x) / (resolution)
+            xarr -= np.max(xarr) / 2
+
+            ax.plot(xarr, dset[skip_x:-skip_x, midy_idx, freq_idx], label=label)
 
         ax.set_xlabel(f"Coordinate {direction} / px")
         ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
+
+
+    ax.legend()
 
     # visualize data
     fig.tight_layout()
