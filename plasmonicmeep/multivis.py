@@ -50,7 +50,7 @@ def open_yaml(file: Path) -> dict:
     """
 
     with open(file, "r") as f:
-        data = yaml.load(f.read())
+        data = yaml.load(f.read(), loader=yaml.FullLoader)
 
     return data
 
