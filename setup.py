@@ -4,7 +4,7 @@
 
 from setuptools import setup
 
-VERSION = "0.1.0"
+VERSION = "0.4.0"
 NAME = "plasmonicmeep"
 LICENSE = "GPLv3"
 DESCRIPTION = (
