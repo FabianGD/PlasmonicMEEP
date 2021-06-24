@@ -1,5 +1,5 @@
 .vscode
-data
+data/*
 __pycache__
 img/**
 !img/sketches/*.svg

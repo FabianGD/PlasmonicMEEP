@@ -1,11 +1,11 @@
-let 
+let
   sources = import ./sources.nix;
-  
-  qchem = import sources.NixOS-QChem;
+
+  qchem = import sources.nixos-qchem;
 
   nixpkgs = import sources.nixpkgs {
     overlays = [ qchem ];
-  
+
     config = {
       allowUnfree = true;
       qchem-config = {
@@ -16,5 +16,5 @@ let
     };
   };
 
-in 
+in
   nixpkgs

@@ -1,48 +1,52 @@
 { pkgs ? import ./nix/pkgs.nix }:
 
 let
-  devPython = pkgs.python3.withPackages(ps: with ps; [
-    pkgs.qchem.python3.pkgs.meep
-    numpy
-    scipy
-    matplotlib
-    h5py
-    joblib
-    black
-    pylint
-    ipykernel
-    ipympl
-  ]);
 
-  plasmonicPython = (import ./nix/default.nix {}).plasmonic-meep;
-
-in
+in with pkgs;
   {
-    develop =
-      with pkgs; mkShell {
-        buildInputs = [
-          which
-          git
+    production = mkShell {
+      buildInputs = [
+        # The custom-linked python
+        ((import ./nix/default.nix {}).plasmonic-meep)
 
-          # SSH is required for running with MPI
-          openssh
-
-          # The custom-linked python
-          devPython
-        ];
+        which
+        git
+        # SSH is required for running with MPI
+        openssh
+      ];
     };
-    production =
-      with pkgs; mkShell {
-        buildInputs = [
-          which
-          git
 
-          # SSH is required for running with MPI
-          ssh
+    # This allows for a local editable(!) dev install
+    dev = pkgs.python3Packages.buildPythonPackage rec {
 
-          # The custom-linked python
-          plasmonicPython
-        ];
+      name = "plasmonicmeep";
+      src = ./.;
+      version = "dev";
+
+      nativeBuildInputs = [
+        which
+        git
+        openssh
+        mpi
+
+        python3Packages.ipykernel
+        python3Packages.black
+        python3Packages.pylint
+      ];
+
+      propagatedBuildInputs = with pkgs.python3Packages; [
+
+        pkgs.qchem.python3.pkgs.meep
+        numpy
+        scipy
+        matplotlib
+        h5py-mpi
+        joblib
+        pandas
+
+        ipympl
+      ];
     };
   }
+
 

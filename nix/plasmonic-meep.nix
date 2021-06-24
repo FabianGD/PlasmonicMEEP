@@ -1,4 +1,4 @@
-{ lib, buildPythonApplication, numpy, scipy, matplotlib, h5py, joblib, meep, pandas }:
+{ lib, buildPythonApplication, numpy, scipy, matplotlib, h5py-mpi, joblib, meep, pandas }:
 
 buildPythonApplication rec {
     pname = "plasmonic-meep";
@@ -11,7 +11,7 @@ buildPythonApplication rec {
         matplotlib
         pandas
 
-        h5py
+        h5py-mpi
         meep
 
         joblib
