@@ -8,12 +8,14 @@ from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
 import meep as mp
 import numpy as np
 from meep import materials
 
 from .utils import append_attrs
 from .model import create_sinus_grating, two_nps
+
 
 
 def argparsing():
@@ -221,10 +223,11 @@ def main():
     # save incident power for transmission plane
     straight_tran_flux = mp.get_fluxes(tran)
 
-    # This appends the calc attributes to the HDF5 file.
-    append_attrs(
-        output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
-    )
+    if mp.am_master():
+        # This appends the calc attributes to the HDF5 file.
+        append_attrs(
+            output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
+        )
 
     sim.reset_meep()
 
@@ -301,10 +304,11 @@ def main():
         until_after_sources=mp.stop_when_fields_decayed(10, comp, point, 1e-2),
     )
 
-    # This appends the calc attributes to the HDF5 file.
-    append_attrs(
-        output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
-    )
+    if mp.am_master():
+        # This appends the calc attributes to the HDF5 file.
+        append_attrs(
+            output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
+        )
 
     refl_flux = np.asarray(mp.get_fluxes(refl))
     tran_flux = np.asarray(mp.get_fluxes(tran))

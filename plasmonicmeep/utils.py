@@ -18,7 +18,10 @@ def vec3_to_nparray(vec):
 
 
 def append_attrs(output, prefix, dset, **kwargs):
-    """Custom function to append attributes to the h5py data files."""
+    """
+    Custom function to append attributes to the h5py data files.
+    This function has to be called from the MPI master!
+    """
 
     file = Path(output) / f"{prefix}-{dset}.h5"
 
