@@ -17,7 +17,6 @@ from .utils import append_attrs
 from .model import create_sinus_grating, two_nps
 
 
-
 def argparsing():
     """
     Argument parser
@@ -50,24 +49,25 @@ def argparsing():
         help="The resolution of the box (nr. of pixels per µm?)",
     )
     parser.add_argument(
-        "-f", "--frequency",
+        "-f",
+        "--frequency",
         type=float,
         default=1.5,
         help=(
             "Change the central frequency of the incident laser field."
             "Frequency is given in units of 1/µm."
-        )
+        ),
     )
     parser.add_argument(
-        "-w", "--freq-width",
+        "-w",
+        "--freq-width",
         type=float,
         default=1.5,
         help=(
             "Change the frequency width of the incident laser field."
             "Pulse with is given in units of µm."
-        )
+        ),
     )
-
 
     parser.add_argument(
         "-g",
@@ -106,7 +106,6 @@ def main():
     if not output_path.is_dir():
         output_path.mkdir(parents=True, exist_ok=True)
     output = str(output_path)
-
 
     # Inner size
     sizex = args.sizex
@@ -162,7 +161,9 @@ def main():
         sources=sources,
         resolution=resolution,
         split_chunks_evenly=False,
+        force_complex_fields=True,
     )
+
     sim.use_output_directory(output)
     prefix = sim.get_filename_prefix()
     # Define monitors for further spectra calculation
@@ -211,12 +212,19 @@ def main():
                         mp.output_efield_z,
                     ),
                 ),
-                until_after_sources=mp.stop_when_fields_decayed(10, comp, point, 1e-2),
+                mp.to_appended(
+                    dset + "-center",
+                    mp.in_point(
+                        mp.Vector3(),
+                        mp.output_efield_x,
+                        mp.output_efield_y,
+                        mp.output_efield_z,
+                    ),
+                ),
+                until=20
             )
         else:
-            sim.run(
-                until_after_sources=mp.stop_when_fields_decayed(10, comp, point, 1e-2)
-            )
+            sim.run(until=20)
 
     # for normalization run, save flux fields data for reflection plane
     straight_refl_data = sim.get_flux_data(refl)
@@ -273,6 +281,7 @@ def main():
         sources=sources,
         resolution=resolution,
         split_chunks_evenly=False,
+        force_complex_fields=True,
     )
     sim.use_output_directory(output)
 
@@ -301,7 +310,16 @@ def main():
                 mp.output_efield_z,
             ),
         ),
-        until_after_sources=mp.stop_when_fields_decayed(10, comp, point, 1e-2),
+        mp.to_appended(
+            dset + "-center",
+            mp.in_point(
+                mp.Vector3(),
+                mp.output_efield_x,
+                mp.output_efield_y,
+                mp.output_efield_z,
+            ),
+        ),
+        until=20
     )
 
     if mp.am_master():
