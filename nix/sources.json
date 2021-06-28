@@ -1,14 +1,14 @@
 {
     "nixos-qchem": {
-        "branch": "meep-mpi",
+        "branch": "master",
         "description": "Nix derivations for HPC/Quantum chemistry software packages",
         "homepage": null,
-        "owner": "sheepforce",
+        "owner": "markuskowa",
         "repo": "nixos-qchem",
-        "rev": "e055d8ddab7643aeda895c93b273a1dc48a77253",
-        "sha256": "1dj88mwiwghxp6b8hpzfaghi3l6jr9vyiv84l3yk9y71mbs67hj0",
+        "rev": "2356fcf893024f5f282422c9a9783eeccec83a24",
+        "sha256": "0pawsfb3i3n44mjg8f722vfcm4qjds6vl4wlpvk5rn5lgchykf70",
         "type": "tarball",
-        "url": "https://github.com/sheepforce/nixOS-qchem/archive/e055d8ddab7643aeda895c93b273a1dc48a77253.tar.gz",
+        "url": "https://github.com/markuskowa/nixos-qchem/archive/2356fcf893024f5f282422c9a9783eeccec83a24.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -17,10 +17,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "b27eaa18b47b77fbbf9f3bd7a17046b2d64b637b",
-        "sha256": "0vhqw7avmn9cimkqk6m2bn7ksjf52iqhv0r89myxm7yvy3wn7nhi",
+        "rev": "e85975942742a3728226ac22a3415f2355bfc897",
+        "sha256": "0zg5c9if4dlk4f0w14439ixjv50m04yfxf0l3bmrhhsgq1f6yk0m",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/b27eaa18b47b77fbbf9f3bd7a17046b2d64b637b.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/e85975942742a3728226ac22a3415f2355bfc897.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
