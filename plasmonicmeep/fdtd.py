@@ -45,7 +45,7 @@ def argparsing():
         "-r",
         "--resolution",
         type=int,
-        default=150,
+        default=200,
         help="The resolution of the box (nr. of pixels per µm?)",
     )
     parser.add_argument(
@@ -75,7 +75,7 @@ def argparsing():
         action="store_true",
         help="Plot only geometry and exit.",
     )
-    parser.add_argument("-o", "--output", default="data/", help="Output folder.")
+    parser.add_argument("-o", "--output", default="./data/", help="Output folder.")
     parser.add_argument(
         "--sinus",
         action="store_true",
@@ -88,6 +88,15 @@ def argparsing():
         help=(
             "At the end of the simulation, plot and save transmission/reflectance/loss spectra."
             "This might fail for MPI runs or on clusters."
+        ),
+    )
+    parser.add_argument(
+        "-c",
+        "--enable-complex",
+        action="store_true",
+        help=(
+            "Enable calculation of complex fields, useful when trying "
+            "to retrieve the phase around the nanostructure"
         ),
     )
 
@@ -161,33 +170,33 @@ def main():
         sources=sources,
         resolution=resolution,
         split_chunks_evenly=False,
-        force_complex_fields=True,
+        force_complex_fields=args.enable_complex,
     )
 
     sim.use_output_directory(output)
     prefix = sim.get_filename_prefix()
-    # Define monitors for further spectra calculation
-    mon_height = sizey
-    nfreq = 200
 
-    # Small skip from PML layers
-    mon_skip = sizex / 20
+    if args.spectrum:
+        # Define monitors for further spectra calculation
+        mon_height = sizey
+        nfreq = 200
 
-    # Flux regions are measurement areas that record the FT at the position at each time step.
-    reflectance_fr = mp.FluxRegion(
-        center=mp.Vector3(-sizex / 2 + mon_skip, 0, 0),
-        size=mp.Vector3(0, mon_height, 0),
-    )
-    transmittance_fr = mp.FluxRegion(
-        center=mp.Vector3(sizex / 2 - mon_skip, 0, 0), size=mp.Vector3(0, mon_height, 0)
-    )
+        # Small skip from PML layers
+        mon_skip = sizex / 20
 
-    # Add the flux regions to the simulation
-    refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)
-    tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
+        # Flux regions are measurement areas that record the FT at the position at each time step.
+        reflectance_fr = mp.FluxRegion(
+            center=mp.Vector3(-sizex / 2 + mon_skip, 0, 0),
+            size=mp.Vector3(0, mon_height, 0),
+        )
+        transmittance_fr = mp.FluxRegion(
+            center=mp.Vector3(sizex / 2 - mon_skip, 0, 0),
+            size=mp.Vector3(0, mon_height, 0),
+        )
 
-    # The point records the field strength over time and gives the cancellation criterion
-    point = mp.Vector3(sizex / 3, 0, 0)
+        # Add the flux regions to the simulation
+        refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)
+        tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
 
     print("Starting reference run")
 
@@ -221,15 +230,16 @@ def main():
                         mp.output_efield_z,
                     ),
                 ),
-                until=20
+                until=20,
             )
         else:
             sim.run(until=20)
 
-    # for normalization run, save flux fields data for reflection plane
-    straight_refl_data = sim.get_flux_data(refl)
-    # save incident power for transmission plane
-    straight_tran_flux = mp.get_fluxes(tran)
+    if args.spectrum:
+        # for normalization run, save flux fields data for reflection plane
+        straight_refl_data = sim.get_flux_data(refl)
+        # save incident power for transmission plane
+        straight_tran_flux = mp.get_fluxes(tran)
 
     if mp.am_master():
         # This appends the calc attributes to the HDF5 file.
@@ -281,14 +291,15 @@ def main():
         sources=sources,
         resolution=resolution,
         split_chunks_evenly=False,
-        force_complex_fields=True,
+        force_complex_fields=args.enable_complex,
     )
     sim.use_output_directory(output)
 
-    # same monitors
-    refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)
-    tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
-    sim.load_minus_flux_data(refl, straight_refl_data)
+    if args.spectrum:
+        # same monitors
+        refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)
+        tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
+        sim.load_minus_flux_data(refl, straight_refl_data)
 
     print("Starting main run")
 
@@ -319,7 +330,7 @@ def main():
                 mp.output_efield_z,
             ),
         ),
-        until=20
+        until=20,
     )
 
     if mp.am_master():
@@ -328,34 +339,32 @@ def main():
             output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
         )
 
-    refl_flux = np.asarray(mp.get_fluxes(refl))
-    tran_flux = np.asarray(mp.get_fluxes(tran))
-    straight_tran_flux = np.asarray(straight_tran_flux)
-    flux_freqs = np.asarray(mp.get_flux_freqs(refl))
+    if args.spectrum:
+        refl_flux = np.asarray(mp.get_fluxes(refl))
+        tran_flux = np.asarray(mp.get_fluxes(tran))
+        straight_tran_flux = np.asarray(straight_tran_flux)
+        flux_freqs = np.asarray(mp.get_flux_freqs(refl))
 
-    wavelengths = 1 / flux_freqs
-    refl_spectrum = -refl_flux / straight_tran_flux
-    tran_spectrum = tran_flux / straight_tran_flux
-    loss_spectrum = 1 - refl_spectrum - tran_spectrum
+        wavelengths = 1 / flux_freqs
+        refl_spectrum = -refl_flux / straight_tran_flux
+        tran_spectrum = tran_flux / straight_tran_flux
+        loss_spectrum = 1 - refl_spectrum - tran_spectrum
 
-    if args.spectrum and mp.am_master():
-        mpl.use("agg")
+        if mp.am_master():
+            mpl.use("agg")
 
-        fig, ax = plt.subplots()
+            fig, ax = plt.subplots()
 
-        ax.plot(wavelengths, refl_spectrum, color="blue", label="reflectance")
-        ax.plot(wavelengths, tran_spectrum, color="red", label="transmittance")
-        ax.plot(wavelengths, loss_spectrum, color="green", label="loss")
+            ax.plot(wavelengths, refl_spectrum, color="blue", label="reflectance")
+            ax.plot(wavelengths, tran_spectrum, color="red", label="transmittance")
+            ax.plot(wavelengths, loss_spectrum, color="green", label="loss")
 
-        ax.set_xlabel("wavelength / μm")
-        ax.legend(loc="upper right")
-        ax.grid(True)
+            ax.set_xlabel("wavelength / μm")
+            ax.legend(loc="upper right")
+            ax.grid(True)
 
-        fig.tight_layout()
-        fig.savefig(output_path / "ReflTransLoss.pdf", dpi=300)
-
-        if args.show_spectra:
-            plt.show()
+            fig.tight_layout()
+            fig.savefig(output_path / "ReflTransLoss.pdf", dpi=300)
 
 
 if __name__ == "__main__":
