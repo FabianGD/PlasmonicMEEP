@@ -116,6 +116,7 @@ def argparsing():
             "Enable calculation of complex fields, useful when trying "
             "to retrieve the phase around the nanostructure"
         ),
+        default=False,
     )
 
     parser.add_argument(
@@ -235,10 +236,10 @@ def main():
     comp = mp.Hz
 
     # Calculate the cell timestep
-    if args.cell_timestep == "auto":
+    if args.time_step == "auto":
         cell_timestep = 0.5 / (cfreq + fwidth * 0.5)
     else:
-        cell_timestep = float(args.cell_timestep)
+        cell_timestep = float(args.time_step)
 
 
     # List of sources, needed for the simulation
@@ -322,7 +323,7 @@ def main():
         # save incident power for transmission plane
         straight_tran_flux = mp.get_fluxes(tran)
 
-    if mp.am_master():
+    if not args.disable_cell_field and mp.am_master():
         # This appends the calc attributes to the HDF5 file.
         append_attrs(
             output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
@@ -382,7 +383,7 @@ def main():
         until=20,
     )
 
-    if mp.am_master():
+    if not args.disable_cell_field and mp.am_master():
         # This appends the calc attributes to the HDF5 file.
         append_attrs(
             output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
