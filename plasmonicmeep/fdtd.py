@@ -5,6 +5,7 @@ Calculate FDTD using MEEP of a plasmonic nanostructure
 import argparse
 import sys
 from pathlib import Path
+from typing import Any, List
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ def argparsing():
     """
     parser = argparse.ArgumentParser(
         description=(
-            "Main FDTD module. Computes spectra and densities of a given model."
+            "Main FDTD module. Computes spectra and densities of a given model. "
             "May be run in parallel using MPI."
         )
     )
@@ -58,7 +59,7 @@ def argparsing():
         type=float,
         default=1.5,
         help=(
-            "Change the central frequency of the incident laser field."
+            "Change the central frequency of the incident laser field. "
             "Frequency is given in units of 1/µm."
         ),
     )
@@ -69,11 +70,26 @@ def argparsing():
         type=float,
         default=1.5,
         help=(
-            "Change the frequency width of the incident laser field."
+            "Change the frequency width of the incident laser field. "
             "Pulse with is given in units of µm."
         ),
     )
 
+    parser.add_argument(
+        "-t",
+        "--time-step",
+        default="auto",
+        help=(
+            "Specify a custom time step to write the field in the entire cell to file. "
+            "By default or by specifying 'auto', the time step is calculated "
+            "by $dt = 0.5 / (cfreq + fwidth * 0.5)$. With the defaults, which is around "
+            "0.22 for the default values."
+        ),
+    )
+
+    parser.add_argument("-o", "--output", default="./data/", help="Output folder.")
+
+    # Boolean args
     parser.add_argument(
         "-g",
         "--show-geometry",
@@ -81,11 +97,9 @@ def argparsing():
         help="Plot only geometry and exit.",
     )
 
-    parser.add_argument("-o", "--output", default="./data/", help="Output folder.")
-
     parser.add_argument(
-        "--spectrum",
         "-s",
+        "--spectrum",
         action="store_true",
         help=(
             "At the end of the simulation, plot and save transmission/reflectance/loss spectra. "
@@ -104,7 +118,76 @@ def argparsing():
         ),
     )
 
+    parser.add_argument(
+        "--disable-cell-field",
+        action="store_true",
+        help=(
+            "Disable writing the entire field to file. Saves some computational effort."
+        ),
+    )
+
     return parser.parse_args()
+
+
+def gen_stepfuncs(
+    dset: str,
+    write_entire_cell: bool = True,
+    write_single_point: bool = True,
+    cell_timestep: float = 0.2,
+    point: mp.Vector3 = mp.Vector3(),
+) -> List[Any]:
+    """Generate step functions to be used for MEEP runs.
+
+    Args:
+        dset (str): Data set name
+        write_entire_cell (bool, optional): Whether to generate a step function that prints
+            the field in the entire cell. Defaults to True.
+        write_single_point (bool, optional): Whether to generate a step function that prints
+            the field only at a specific point. Defaults to True.
+        cell_timestep (float, optional): The timestep used for printing the entire field,
+            in MEEP units of time. Defaults to 0.2.
+        point (mp.Vector3, optional): The point in configuration space to read the field
+            from. Defaults to mp.Vector3().
+
+    Raises:
+        ValueError: In case that both 'write_entire_cell' and 'write_single_point' are False.
+
+    Returns:
+        List[Any]: List of MEEP step functions.
+    """
+
+    step_functions = []
+
+    if not write_entire_cell and not write_single_point:
+        raise ValueError("You need to output something.")
+
+    if write_entire_cell:
+        step_functions.append(
+            mp.to_appended(
+                dset,
+                mp.at_every(
+                    cell_timestep,
+                    mp.output_efield_x,
+                    mp.output_efield_y,
+                    mp.output_efield_z,
+                ),
+            )
+        )
+
+    if write_single_point:
+        step_functions.append(
+            mp.to_appended(
+                dset + "-center",
+                mp.in_point(
+                    point,
+                    mp.output_efield_x,
+                    mp.output_efield_y,
+                    mp.output_efield_z,
+                ),
+            )
+        )
+
+    return step_functions
 
 
 def main():
@@ -150,6 +233,13 @@ def main():
 
     # Field component to monitor
     comp = mp.Hz
+
+    # Calculate the cell timestep
+    if args.cell_timestep == "auto":
+        cell_timestep = 0.5 / (cfreq + fwidth * 0.5)
+    else:
+        cell_timestep = float(args.cell_timestep)
+
 
     # List of sources, needed for the simulation
     sources = [
@@ -216,23 +306,10 @@ def main():
     else:
         if saveref:
             sim.run(
-                mp.to_appended(
+                *gen_stepfuncs(
                     dset,
-                    mp.at_every(
-                        0.5 / (cfreq + fwidth * 0.5),
-                        mp.output_efield_x,
-                        mp.output_efield_y,
-                        mp.output_efield_z,
-                    ),
-                ),
-                mp.to_appended(
-                    dset + "-center",
-                    mp.in_point(
-                        mp.Vector3(),
-                        mp.output_efield_x,
-                        mp.output_efield_y,
-                        mp.output_efield_z,
-                    ),
+                    write_entire_cell=not args.disable_cell_field,
+                    cell_timestep=cell_timestep,
                 ),
                 until=20,
             )
@@ -264,7 +341,6 @@ def main():
         # plot2D function does not handle correctly
         # dispersive materials
         mat = mp.Medium(epsilon=5)
-
 
     geometry = two_nps(
         radius=0.05, separation=0.005, center=mp.Vector3(), material=mat, y=True
@@ -298,23 +374,10 @@ def main():
         sys.exit()
 
     sim.run(
-        mp.to_appended(
+        *gen_stepfuncs(
             dset,
-            mp.at_every(
-                0.5 / (cfreq + fwidth * 0.5),
-                mp.output_efield_x,
-                mp.output_efield_y,
-                mp.output_efield_z,
-            ),
-        ),
-        mp.to_appended(
-            dset + "-center",
-            mp.in_point(
-                mp.Vector3(),
-                mp.output_efield_x,
-                mp.output_efield_y,
-                mp.output_efield_z,
-            ),
+            write_entire_cell=not args.disable_cell_field,
+            cell_timestep=cell_timestep,
         ),
         until=20,
     )
