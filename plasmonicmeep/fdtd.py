@@ -14,7 +14,7 @@ import numpy as np
 from meep import materials
 
 from .utils import append_attrs
-from .model import create_sinus_grating, two_nps
+from .model import two_nps
 
 
 def argparsing():
@@ -27,6 +27,7 @@ def argparsing():
             "May be run in parallel using MPI."
         )
     )
+
     parser.add_argument(
         "-x",
         "--sizex",
@@ -34,6 +35,7 @@ def argparsing():
         default=1.0,
         help="The size of the box in µm in the x direction.",
     )
+
     parser.add_argument(
         "-y",
         "--sizey",
@@ -41,6 +43,7 @@ def argparsing():
         default=1.0,
         help="The size of the box in µm in the y direction.",
     )
+
     parser.add_argument(
         "-r",
         "--resolution",
@@ -48,6 +51,7 @@ def argparsing():
         default=200,
         help="The resolution of the box (nr. of pixels per µm?)",
     )
+
     parser.add_argument(
         "-f",
         "--frequency",
@@ -58,6 +62,7 @@ def argparsing():
             "Frequency is given in units of 1/µm."
         ),
     )
+
     parser.add_argument(
         "-w",
         "--freq-width",
@@ -75,21 +80,20 @@ def argparsing():
         action="store_true",
         help="Plot only geometry and exit.",
     )
+
     parser.add_argument("-o", "--output", default="./data/", help="Output folder.")
-    parser.add_argument(
-        "--sinus",
-        action="store_true",
-        help="Create the sinus grating geometry for benchmarking.",
-    )
+
     parser.add_argument(
         "--spectrum",
         "-s",
         action="store_true",
         help=(
-            "At the end of the simulation, plot and save transmission/reflectance/loss spectra."
-            "This might fail for MPI runs or on clusters."
+            "At the end of the simulation, plot and save transmission/reflectance/loss spectra. "
+            "This might fail for MPI runs or on clusters. "
+            "Adds complexity and runtime to the calculation."
         ),
     )
+
     parser.add_argument(
         "-c",
         "--enable-complex",
@@ -261,28 +265,10 @@ def main():
         # dispersive materials
         mat = mp.Medium(epsilon=5)
 
-    if args.sinus:
-        metal_vert = create_sinus_grating(
-            ampl=0.1,
-            periodicity=0.5,
-            thickness=0.04,
-            resolution=resolution,
-            sizex=fully,
-            y=True,
-        )
-        geometry = [
-            mp.Prism(
-                metal_vert,
-                height=100,
-                center=mp.Vector3(0, 0, 0),
-                axis=mp.Vector3(0, 0, 1),
-                material=mat,
-            )
-        ]
-    else:
-        geometry = two_nps(
-            radius=0.05, separation=0.005, center=mp.Vector3(), material=mat, y=True
-        )
+
+    geometry = two_nps(
+        radius=0.05, separation=0.005, center=mp.Vector3(), material=mat, y=True
+    )
 
     sim = mp.Simulation(
         cell_size=cell,
