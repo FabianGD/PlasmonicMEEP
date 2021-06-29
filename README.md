@@ -80,7 +80,7 @@ editable package would not be "pure" (in the FP sense of pure)),just run the
 following in the root directory of the repo:
 
 ```bash
-nix-shell -A develop
+nix-shell -A dev
 ```
 
 To update the git repositories used for querying the dependencies, run in the repo:
