@@ -241,7 +241,6 @@ def main():
     else:
         cell_timestep = float(args.time_step)
 
-
     # List of sources, needed for the simulation
     sources = [
         mp.Source(
