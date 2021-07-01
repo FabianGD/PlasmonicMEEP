@@ -27,6 +27,7 @@ in with pkgs;
         black
         pylint
         ipympl
+        pytest
       ];
     };
   }
