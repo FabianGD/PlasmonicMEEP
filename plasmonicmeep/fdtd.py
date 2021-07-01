@@ -175,6 +175,10 @@ def main():
     )
 
     sim.use_output_directory(output)
+
+    # TODO: Prefix bug fix
+    # Fix upstream bug that resets the prefix. The solution here saves us from
+    # misery, however.
     prefix = sim.get_filename_prefix()
 
     if args.spectrum:
