@@ -1,6 +1,6 @@
-{ lib, buildPythonApplication, nix-gitignore
+{ lib, buildPythonApplication, nix-gitignore, openssh
 # Python deps
-, numpy, scipy, matplotlib, h5py-mpi, joblib, meep, pandas
+, numpy, scipy, matplotlib, h5py-mpi, joblib, meep, pandas, pytestCheckHook
 # Optional dependencies for development
 , additionalDevDeps ? [ ] }:
 
@@ -12,6 +12,7 @@ buildPythonApplication rec {
     nativeBuildInputs = additionalDevDeps ++ [ ];
 
     propagatedBuildInputs = [
+
         numpy
         scipy
         matplotlib
@@ -23,7 +24,15 @@ buildPythonApplication rec {
         joblib
     ];
 
-  doCheck = false;
+    doCheck = true;
+
+    checkInputs = [
+        pytestCheckHook
+
+        # OpenSSH is necessary because of MEEP's MPI
+        openssh
+    ];
+    pytestFlagsArray = [ "tests/" ];
 
     meta = {
         description = "Set of scripts for calculation of plasmon resonance/electric field enhancement on different structures";
