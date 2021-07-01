@@ -15,7 +15,7 @@ import meep as mp
 import numpy as np
 from meep import materials
 
-from .utils import append_attrs
+from .utils import append_attrs, append_timegrid
 from .model import two_nps
 from .args import fdtd_argparsing
 
@@ -107,6 +107,16 @@ def main():
     # Computational grid resolution in pixels per distance unit
     resolution = args.resolution
     pml_th = 30 / resolution
+
+    timestep = 0.5 / resolution
+    n_timesteps = int(args.run_until / timestep)
+
+    logging.info(
+        "Calculated time step based on Courant factor and res: {}. "
+        "Assuming MEEP wants to perform {:.0f} timesteps.".format(
+            timestep, n_timesteps
+        )
+    )
 
     # Full system size including PMLs
     fullx = sizex + 2 * pml_th
@@ -223,7 +233,16 @@ def main():
     if not args.disable_cell_field and mp.am_master():
         # This appends the calc attributes to the HDF5 file.
         append_attrs(
-            output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
+            folder=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
+        )
+
+    if not args.disable_single_point and mp.am_master():
+        append_timegrid(
+            folder=output_path,
+            prefix=prefix,
+            dset="-".join([dset, "center"]),
+            n_timesteps=n_timesteps,
+            timestep=timestep,
         )
 
     sim.reset_meep()
@@ -284,7 +303,16 @@ def main():
     if not args.disable_cell_field and mp.am_master():
         # This appends the calc attributes to the HDF5 file.
         append_attrs(
-            output=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
+            folder=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
+        )
+
+    if not args.disable_single_point and mp.am_master():
+        append_timegrid(
+            folder=output_path,
+            prefix=prefix,
+            dset="-".join([dset, "center"]),
+            n_timesteps=n_timesteps,
+            timestep=timestep,
         )
 
     if args.spectrum:
