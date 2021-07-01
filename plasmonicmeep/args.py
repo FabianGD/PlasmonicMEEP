@@ -6,6 +6,46 @@ Argument parsers for the plasmonicmeep scripts
 """
 
 import argparse
+from functools import partial
+from typing import List, Any, Type
+
+
+def positive_type(value: str, rtype: Type, other_allowed: List[Any] = None) -> Any:
+    """Type conversion for positive numericals (floats/ints). Allows specified other values.
+
+    Args:
+        value (str): The value to convert and check
+        rtype (Type): [description]
+        other_allowed (List[Any], optional): [description]. Defaults to [].
+
+    Raises:
+        argparse.ArgumentTypeError: [description]
+
+    Returns:
+        Any: [description]
+    """
+
+    if other_allowed is None:
+        other_allowed = []
+
+    if value in other_allowed:
+        return value
+
+    try:
+        conv_val = rtype(value)
+    except ValueError as e:
+        raise ValueError(
+            "Could not convert value '{}' to type '{}'".format(value, rtype.__name__)
+        )
+
+    if conv_val in other_allowed:
+        return conv_val
+    elif conv_val <= 0:
+        raise argparse.ArgumentTypeError(
+            "{} has to be a positive {} value.".format(value, rtype.__name__)
+        )
+
+    return conv_val
 
 
 def fdtd_argparsing():
@@ -22,8 +62,8 @@ def fdtd_argparsing():
     parser.add_argument(
         "-n",
         "--calc-name",
-        default="plasmonic",
         type=str,
+        default="PlasmonicMEEP",
         help=(
             "Name or identifier of the calculation. Used as filename_prefix in the MEEP simulation."
         ),
@@ -32,7 +72,7 @@ def fdtd_argparsing():
     parser.add_argument(
         "-x",
         "--sizex",
-        type=float,
+        type=partial(positive_type, rtype=float),
         default=0.5,
         help="The size of the box in µm in the x direction.",
     )
@@ -40,7 +80,7 @@ def fdtd_argparsing():
     parser.add_argument(
         "-y",
         "--sizey",
-        type=float,
+        type=partial(positive_type, rtype=float),
         default=0.5,
         help="The size of the box in µm in the y direction.",
     )
@@ -48,7 +88,7 @@ def fdtd_argparsing():
     parser.add_argument(
         "-r",
         "--resolution",
-        type=int,
+        type=partial(positive_type, rtype=int),
         default=200,
         help="The resolution of the box (nr. of pixels per µm?)",
     )
@@ -56,7 +96,7 @@ def fdtd_argparsing():
     parser.add_argument(
         "-f",
         "--frequency",
-        type=float,
+        type=partial(positive_type, rtype=float),
         default=1.5,
         help=(
             "Change the central frequency of the incident laser field. "
@@ -67,7 +107,7 @@ def fdtd_argparsing():
     parser.add_argument(
         "-w",
         "--freq-width",
-        type=float,
+        type=partial(positive_type, rtype=float),
         default=1.5,
         help=(
             "Change the frequency width of the incident laser field. "
@@ -79,7 +119,7 @@ def fdtd_argparsing():
         "-u",
         "--run-until",
         default=20.0,
-        type=float,
+        type=partial(positive_type, rtype=float),
         help=(
             "Set the finish time of the simulations in MEEP time units. Defaults to 20.0"
         ),
@@ -89,6 +129,7 @@ def fdtd_argparsing():
         "-t",
         "--cfield-time-step",
         default="auto",
+        type=partial(positive_type, rtype=float, other_allowed=["auto"]),
         help=(
             "Specify a custom time step to write the field in the entire cell to file. "
             "By default or by specifying 'auto', the time step is calculated "
