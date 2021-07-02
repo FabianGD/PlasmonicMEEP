@@ -12,6 +12,11 @@ import h5py
 import numpy as np
 
 
+class PlasmonicMEEPInputError(Exception):
+    """Input error subclass for PlasmonicMEEP"""
+    ...
+
+
 def meep_path(folder: Union[Path, str], prefix: str, dset: str):
     """Get the Path to a MEEP dataset file
 
