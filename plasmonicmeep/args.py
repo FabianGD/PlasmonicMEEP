@@ -15,14 +15,20 @@ def positive_type(value: str, rtype: Type, other_allowed: List[Any] = None) -> A
 
     Args:
         value (str): The value to convert and check
-        rtype (Type): [description]
-        other_allowed (List[Any], optional): [description]. Defaults to [].
+        rtype (Type): The type conversion function to use.
+        other_allowed (List[Any], optional): Other allowed values for
+            special cases, such as "auto" or "-1" etc. Defaults to [].
 
     Raises:
-        argparse.ArgumentTypeError: [description]
+        argparse.ArgumentTypeError: If the value provided is not in `other_allowed` and
+            negative.
+        ValueError: If the value provided is not in `other_allowed` and could not be
+            converted to the requested value.
 
     Returns:
-        Any: [description]
+        Any: Either the value as is (if in `other_allowed`) or the value after
+            conversion. It will also return the converted value if the converted
+            value is in `other_allowed`.
     """
 
     if other_allowed is None:
@@ -36,7 +42,7 @@ def positive_type(value: str, rtype: Type, other_allowed: List[Any] = None) -> A
     except ValueError as e:
         raise ValueError(
             "Could not convert value '{}' to type '{}'".format(value, rtype.__name__)
-        )
+        ) from e
 
     if conv_val in other_allowed:
         return conv_val
