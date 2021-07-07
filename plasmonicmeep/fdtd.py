@@ -99,17 +99,18 @@ def main():
     logging.basicConfig(level=level)
 
     # This will be used as a subfolder in the output folder
-    subfolder = "_".join([datetime.now().strftime("%Y-%m-%dt%H-%M"), args.calc_name])
+    subfolder = "_".join([datetime.now().strftime("%Y-%m-%d_%H-%M"), args.calc_name])
 
     # Set up output path, if not already existent.
     output_path = Path(args.output).expanduser().resolve() / subfolder
-    if not output_path.is_dir():
+    if mp.am_master() and not output_path.is_dir():
         output_path.mkdir(parents=True, exist_ok=True)
     output = str(output_path)
 
-    logging.info(args.__dict__)
-    with open(output_path / "cli_args.yml", "w") as f:
-        yaml.dump(args.__dict__, stream=f, default_flow_style=False)
+    if mp.am_master():
+        logging.info(args.__dict__)
+        with open(output_path / "cli_args.yml", "w") as f:
+            yaml.dump(args.__dict__, stream=f, default_flow_style=False)
 
     # Inner size
     sizex = args.sizex
@@ -122,10 +123,11 @@ def main():
     timestep = 0.5 / resolution
     n_timesteps = int(args.run_until / timestep)
 
-    logging.info(
-        "Calculated time step based on Courant factor and res: {}. "
-        "Assuming MEEP wants to perform {:.0f} timesteps.".format(timestep, n_timesteps)
-    )
+    if mp.am_master():
+        logging.info(
+            "Calculated time step based on Courant factor and res: {}. "
+            "Assuming MEEP wants to perform {:.0f} timesteps.".format(timestep, n_timesteps)
+        )
 
     # Full system size including PMLs
     fullx = sizex + 2 * pml_th
@@ -148,6 +150,8 @@ def main():
 
     # Field component to monitor
     comp = mp.Hz
+
+    point = mp.Vector3(*args.point)
 
     # Calculate the cell timestep
     if args.cfield_time_step == "auto":
@@ -211,8 +215,6 @@ def main():
         refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)
         tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
 
-    logging.info("Starting reference run")
-
     #######################
     # Reference calculation
     #######################
@@ -229,31 +231,31 @@ def main():
                 write_entire_cell=not args.disable_cell_field,
                 write_single_point=not args.disable_single_point,
                 cell_timestep=cell_timestep,
-                point=args.point,
+                point=point,
             ),
             until=args.run_until,
         )
 
-    if args.spectrum:
-        # for normalization run, save flux fields data for reflection plane
-        straight_refl_data = sim.get_flux_data(refl)
-        # save incident power for transmission plane
-        straight_tran_flux = mp.get_fluxes(tran)
+        if args.spectrum:
+            # for normalization run, save flux fields data for reflection plane
+            straight_refl_data = sim.get_flux_data(refl)
+            # save incident power for transmission plane
+            straight_tran_flux = mp.get_fluxes(tran)
 
-    if not args.disable_cell_field and mp.am_master():
-        # This appends the calc attributes to the HDF5 file.
-        append_attrs(
-            folder=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
-        )
+        if not args.disable_cell_field and mp.am_master():
+            # This appends the calc attributes to the HDF5 file.
+            append_attrs(
+                folder=output_path, prefix=prefix, dset=dset, cfreq=cfreq, fwidth=fwidth
+            )
 
-    if not args.disable_single_point and mp.am_master():
-        append_timegrid(
-            folder=output_path,
-            prefix=prefix,
-            dset="-".join([dset, "center"]),
-            n_timesteps=n_timesteps,
-            timestep=timestep,
-        )
+        if not args.disable_single_point and mp.am_master():
+            append_timegrid(
+                folder=output_path,
+                prefix=prefix,
+                dset="-".join([dset, "center"]),
+                n_timesteps=n_timesteps,
+                timestep=timestep,
+            )
 
     sim.reset_meep()
 
@@ -290,12 +292,17 @@ def main():
         tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
         sim.load_minus_flux_data(refl, straight_refl_data)
 
-    logging.info("Starting main run")
-
     if geom:
-        sim.plot2D(labels=True)
+        fig1, ax1 = plt.subplots()
+        sim.plot2D(ax=ax1, labels=True)
+        ax1.scatter(point.x, point.y, s=20, c="r")
 
         if mp.am_master():
+            fname = output_path / ".".join([args.calc_name, "Geometry", "svg"])
+            fname_png = fname.with_suffix(".png")
+            fig1.savefig(fname, dpi=300)
+            fig1.savefig(fname_png, dpi=300)
+
             plt.show()
 
         sys.exit()
@@ -306,7 +313,7 @@ def main():
             write_entire_cell=not args.disable_cell_field,
             write_single_point=not args.disable_single_point,
             cell_timestep=cell_timestep,
-            point=args.point,
+            point=point,
         ),
         until=args.run_until,
     )

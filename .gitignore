@@ -1,4 +1,6 @@
 .vscode
+.pytest_cache
+.mypy_cache
 /data
 __pycache__
 img/**

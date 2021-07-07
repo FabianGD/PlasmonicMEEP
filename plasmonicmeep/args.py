@@ -164,7 +164,6 @@ def fdtd_argparsing():
         "--point",
         type=float,
         default=[0, 0],
-        action=VectorAction,
         nargs=2,
         metavar=("X", "Y"),
         help=(
