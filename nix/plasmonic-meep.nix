@@ -6,7 +6,7 @@
 
 buildPythonApplication rec {
     pname = "plasmonic-meep";
-    version = "0.4.0";
+    version = "0.5.0";
     src = nix-gitignore.gitignoreSource [ ] ../.;
 
     nativeBuildInputs = additionalDevDeps ++ [ ];
