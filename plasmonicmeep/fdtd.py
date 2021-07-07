@@ -6,7 +6,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional, Sequence
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -81,12 +81,12 @@ def gen_stepfuncs(
     return step_functions
 
 
-def main():
+def main(argv: Optional[Sequence[str]] = None):
     """
     Main computation
     """
 
-    args = fdtd_argparsing()
+    args = fdtd_argparsing(argv)
 
     # Setting Python and MEEP log levels.
     level = {
@@ -286,12 +286,6 @@ def main():
     )
     sim.use_output_directory(output)
 
-    if args.spectrum:
-        # same monitors
-        refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)
-        tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
-        sim.load_minus_flux_data(refl, straight_refl_data)
-
     if geom:
         fig1, ax1 = plt.subplots()
         sim.plot2D(ax=ax1, labels=True)
@@ -306,6 +300,12 @@ def main():
             plt.show()
 
         sys.exit()
+
+    elif args.spectrum:
+        # same monitors
+        refl = sim.add_flux(cfreq, fwidth, nfreq, reflectance_fr)
+        tran = sim.add_flux(cfreq, fwidth, nfreq, transmittance_fr)
+        sim.load_minus_flux_data(refl, straight_refl_data)
 
     sim.run(
         *gen_stepfuncs(
@@ -362,4 +362,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit as e:
+        print(e.code)
+        raise e

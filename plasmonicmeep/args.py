@@ -7,7 +7,7 @@ Argument parsers for the plasmonicmeep scripts
 
 import argparse
 from functools import partial
-from typing import List, Any, Type
+from typing import List, Any, Optional, Sequence, Type
 
 from meep import Vector3
 
@@ -71,9 +71,9 @@ def positive_type(value: str, rtype: Type, other_allowed: List[Any] = None) -> A
     return conv_val
 
 
-def fdtd_argparsing():
+def fdtd_argparsing(args: Optional[Sequence[str]] = None):
     """
-    Argument parser
+    Argument parser for the FDTD module.
     """
     parser = argparse.ArgumentParser(
         description=(
@@ -233,4 +233,4 @@ def fdtd_argparsing():
         ),
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args=args)
