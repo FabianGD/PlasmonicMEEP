@@ -9,6 +9,23 @@ import argparse
 from functools import partial
 from typing import List, Any, Type
 
+from meep import Vector3
+
+
+class VectorAction(argparse.Action):
+    """
+    Custom argparse.Action subclass to generate a meep.Vector3 directly
+    from input.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+
+        vec = Vector3(*values)
+        setattr(namespace, self.dest, vec)
+
 
 def positive_type(value: str, rtype: Type, other_allowed: List[Any] = None) -> Any:
     """Type conversion for positive numericals (floats/ints). Allows specified other values.
@@ -64,6 +81,17 @@ def fdtd_argparsing():
             "May be run in parallel using MPI."
         )
     )
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        help=(
+            "Get more verbose output. Maximum two times."
+        ),
+        default=0
+    )
+
 
     parser.add_argument(
         "-n",
@@ -128,6 +156,21 @@ def fdtd_argparsing():
         type=partial(positive_type, rtype=float),
         help=(
             "Set the finish time of the simulations in MEEP time units. Defaults to 20.0"
+        ),
+    )
+
+    parser.add_argument(
+        "-p",
+        "--point",
+        type=float,
+        default=[0, 0],
+        action=VectorAction,
+        nargs=2,
+        metavar=("X", "Y"),
+        help=(
+            "Specify the location of the single point on which the "
+            "field is output from. Defaults to the center of the 2D box, "
+            "which is at [0, 0]"
         ),
     )
 

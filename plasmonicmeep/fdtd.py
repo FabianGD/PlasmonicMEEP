@@ -2,22 +2,22 @@
 Calculate FDTD using MEEP of a plasmonic nanostructure
 """
 
-import sys
 import logging
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, List
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
 import meep as mp
 import numpy as np
+import yaml
 from meep import materials
 
-from .utils import append_attrs, append_timegrid
-from .model import two_nps
 from .args import fdtd_argparsing
+from .model import two_nps
+from .utils import append_attrs, append_timegrid
 
 
 def gen_stepfuncs(
@@ -88,8 +88,15 @@ def main():
 
     args = fdtd_argparsing()
 
-    # TODO Possibility to change log levels.
-    logging.basicConfig(level="INFO")
+    # Setting Python and MEEP log levels.
+    level = {
+        1: logging.INFO,
+        2: logging.DEBUG,
+        3: logging.DEBUG,
+    }.get(args.verbose, logging.WARNING)
+    mp.verbosity(args.verbose)
+
+    logging.basicConfig(level=level)
 
     # This will be used as a subfolder in the output folder
     subfolder = "_".join([datetime.now().strftime("%Y-%m-%dt%H-%M"), args.calc_name])
@@ -99,6 +106,10 @@ def main():
     if not output_path.is_dir():
         output_path.mkdir(parents=True, exist_ok=True)
     output = str(output_path)
+
+    logging.info(args.__dict__)
+    with open(output_path / "cli_args.yml", "w") as f:
+        yaml.dump(args.__dict__, stream=f, default_flow_style=False)
 
     # Inner size
     sizex = args.sizex
@@ -113,9 +124,7 @@ def main():
 
     logging.info(
         "Calculated time step based on Courant factor and res: {}. "
-        "Assuming MEEP wants to perform {:.0f} timesteps.".format(
-            timestep, n_timesteps
-        )
+        "Assuming MEEP wants to perform {:.0f} timesteps.".format(timestep, n_timesteps)
     )
 
     # Full system size including PMLs
@@ -128,7 +137,6 @@ def main():
 
     # Methods
     geom = args.show_geometry
-    saveref = True
 
     # Frequency in  1 / µm. Speed of light c == 1
     # Size dimension a --> Time dimension a / c
@@ -215,18 +223,16 @@ def main():
         sim.init_sim()
 
     else:
-        if saveref:
-            sim.run(
-                *gen_stepfuncs(
-                    dset,
-                    write_entire_cell=not args.disable_cell_field,
-                    write_single_point=not args.disable_single_point,
-                    cell_timestep=cell_timestep,
-                ),
-                until=20,
-            )
-        else:
-            sim.run(until=20)
+        sim.run(
+            *gen_stepfuncs(
+                dset,
+                write_entire_cell=not args.disable_cell_field,
+                write_single_point=not args.disable_single_point,
+                cell_timestep=cell_timestep,
+                point=args.point,
+            ),
+            until=args.run_until,
+        )
 
     if args.spectrum:
         # for normalization run, save flux fields data for reflection plane
@@ -300,8 +306,9 @@ def main():
             write_entire_cell=not args.disable_cell_field,
             write_single_point=not args.disable_single_point,
             cell_timestep=cell_timestep,
+            point=args.point,
         ),
-        until=20,
+        until=args.run_until,
     )
 
     if not args.disable_cell_field and mp.am_master():

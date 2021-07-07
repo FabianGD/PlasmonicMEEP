@@ -1,6 +1,6 @@
 { lib, buildPythonApplication, nix-gitignore, openssh
 # Python deps
-, numpy, scipy, matplotlib, h5py-mpi, joblib, meep, pandas, pytestCheckHook
+, numpy, scipy, matplotlib, h5py-mpi, joblib, meep, pandas, pyyaml, pytestCheckHook
 # Optional dependencies for development
 , additionalDevDeps ? [ ] }:
 
@@ -12,16 +12,14 @@ buildPythonApplication rec {
     nativeBuildInputs = additionalDevDeps ++ [ ];
 
     propagatedBuildInputs = [
-
-        numpy
-        scipy
-        matplotlib
-        pandas
-
-        h5py-mpi
-        meep
-
         joblib
+        h5py-mpi
+        matplotlib
+        meep
+        numpy
+        pandas
+        scipy
+        pyyaml
     ];
 
     doCheck = true;
