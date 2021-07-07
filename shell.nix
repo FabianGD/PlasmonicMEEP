@@ -17,34 +17,17 @@ in with pkgs;
     };
 
     # This allows for a local editable(!) dev install
-    dev = pkgs.python3Packages.buildPythonPackage rec {
-
-      name = "plasmonicmeep";
-      src = ./.;
-      version = "dev";
-
-      nativeBuildInputs = [
-        which
-        git
-        openssh
+    dev = pkgs.python3Packages.callPackage ./nix/plasmonic-meep.nix {
+      meep = pkgs.qchem.python3.pkgs.meep;
+      additionalDevDeps = with python3Packages; [
         mpi
+        openssh
 
-        python3Packages.ipykernel
-        python3Packages.black
-        python3Packages.pylint
-      ];
-
-      propagatedBuildInputs = with pkgs.python3Packages; [
-
-        pkgs.qchem.python3.pkgs.meep
-        numpy
-        scipy
-        matplotlib
-        h5py-mpi
-        joblib
-        pandas
-
+        ipykernel
+        black
+        pylint
         ipympl
+        pytest
       ];
     };
   }

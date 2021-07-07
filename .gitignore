@@ -1,5 +1,7 @@
 .vscode
-data/*
+.pytest_cache
+.mypy_cache
+/data
 __pycache__
 img/**
 !img/sketches/*.svg
