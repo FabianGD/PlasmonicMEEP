@@ -10,3 +10,6 @@ test
 /spectra.svg
 nix/result
 example.py
+
+# SLURM stdout files
+*.out
