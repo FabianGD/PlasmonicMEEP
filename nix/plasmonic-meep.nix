@@ -1,12 +1,12 @@
 { lib, buildPythonApplication, nix-gitignore, openssh
 # Python deps
-, numpy, scipy, matplotlib, h5py-mpi, joblib, meep, pandas, pyyaml, pytestCheckHook
+, numpy, matplotlib, h5py-mpi, joblib, meep, pandas, pyyaml, pytestCheckHook
 # Optional dependencies for development
 , additionalDevDeps ? [ ] }:
 
 buildPythonApplication rec {
     pname = "plasmonic-meep";
-    version = "0.5.0";
+    version = "0.5.1";
     src = nix-gitignore.gitignoreSource [ ] ../.;
 
     nativeBuildInputs = additionalDevDeps ++ [ ];
@@ -18,7 +18,6 @@ buildPythonApplication rec {
         meep
         numpy
         pandas
-        scipy
         pyyaml
     ];
 
