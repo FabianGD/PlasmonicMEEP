@@ -4,7 +4,7 @@
 
 from setuptools import setup
 
-VERSION = "0.5.0"
+VERSION = "0.5.1"
 NAME = "plasmonicmeep"
 LICENSE = "GPLv3"
 DESCRIPTION = (
@@ -15,11 +15,12 @@ EMAIL = "fabian.droege@uni-jena.de"
 AUTHOR = "Fabian G. Dröge"
 REQUIRES_PYTHON = ">=3.7.0"
 REQUIRED = [
+    "joblib",
+    "h5py",
     "numpy",
     "matplotlib",
-    "h5py",
     "pandas",
-    "joblib"
+    "pyyaml",
 ]
 ENTRYPOINTS = {
     "console_scripts": [
