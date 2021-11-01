@@ -8,8 +8,11 @@ img/**
 *.egg-info
 test
 /spectra.svg
-nix/result
 example.py
 
 # SLURM stdout files
 *.out
+
+# Nix output
+/result
+nix/result

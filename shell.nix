@@ -7,7 +7,7 @@ in with pkgs;
     production = mkShell {
       buildInputs = [
         # The custom-linked python
-        ((import ./nix/default.nix {}).plasmonic-meep)
+        (import ./default.nix {}).plasmonic-meep
 
         which
         git
@@ -17,8 +17,8 @@ in with pkgs;
     };
 
     # This allows for a local editable(!) dev install
-    dev = pkgs.python3Packages.callPackage ./nix/plasmonic-meep.nix {
-      meep = pkgs.qchem.python3.pkgs.meep;
+    dev = pkgs.python3Packages.callPackage ./. {
+      qchemPkgs = pkgs.qchem;
       additionalDevDeps = with python3Packages; [
         mpi
         openssh
