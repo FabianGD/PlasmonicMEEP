@@ -17,7 +17,7 @@ from meep import materials
 
 from .args import fdtd_argparsing
 from .model import two_nps
-from .utils import append_attrs, append_timegrid
+from ..utils import append_attrs, append_timegrid
 
 
 def gen_stepfuncs(
