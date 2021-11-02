@@ -16,5 +16,4 @@ let
     };
   };
 
-in
-  nixpkgs
+in nixpkgs
