@@ -3,7 +3,6 @@ Create the vertices for MEEP to use as a material
 """
 
 from typing import List, Optional
-
 import meep as mp
 import numpy as np
 
@@ -66,7 +65,69 @@ def create_sinus_grating(
     return vertices + aux_vert
 
 
-def two_nps(
+def bow_y(
+    height: float,
+    separation: float,
+    center: mp.Vector3,
+    material: mp.Medium,
+    y: bool = False,
+) -> List[mp.Vector3]:
+    """
+    Create bowtie-shaped dimer oriented along y axis.
+    """
+
+    # Calculate vertices
+    side_length = np.sqrt(height**2/3)
+    
+    vertices1 = [
+        mp.Vector3(center.x , center.y - separation/2, center.z),
+        mp.Vector3(center.x - side_length, center.y - separation/2 - height, center.z),
+        mp.Vector3(center.x + side_length, center.y - separation/2 - height, center.z)
+    ]
+    vertices2 = [
+        mp.Vector3(center.x, center.y + separation/2, center.z),
+        mp.Vector3(center.x - side_length, center.y + separation/2 + height, center.z),
+        mp.Vector3(center.x + side_length, center.y + separation/2 + height, center.z)
+    ]
+   
+    triangle1 = mp.Prism(vertices1, height = mp.inf, material=material)
+    triangle2 = mp.Prism(vertices2, height = mp.inf, material=material)
+
+    return [triangle1, triangle2]
+
+
+def bow_x(
+    height: float,
+    separation: float,
+    center: mp.Vector3,
+    material: mp.Medium,
+    y: bool = False,
+) -> List[mp.Vector3]:
+    """
+    Create bowtie-shaped dimer oriented along x axis.
+    """
+
+    # Calculate vertices
+    side_length = np.sqrt(height**2/3)
+    
+    vertices1 = [
+        mp.Vector3(center.x - separation/2, center.y, center.z),
+        mp.Vector3(center.x - separation/2 - height, center.y - side_length, center.z),
+        mp.Vector3(center.x - separation/2 - height, center.y + side_length, center.z)
+    ]
+    vertices2 = [
+        mp.Vector3(center.x + separation/2, center.y, center.z),
+        mp.Vector3(center.x + separation/2 + height, center.y - side_length, center.z),
+        mp.Vector3(center.x + separation/2 + height, center.y + side_length, center.z)
+    ]
+
+    triangle1 = mp.Prism(vertices1, height = mp.inf, material=material)
+    triangle2 = mp.Prism(vertices2, height = mp.inf, material=material)
+
+    return [triangle1, triangle2]
+
+
+def spheres_y(
     radius: float,
     separation: float,
     center: mp.Vector3,
@@ -74,20 +135,97 @@ def two_nps(
     y: bool = False,
 ) -> List[mp.Sphere]:
     """
-    Create two spherical nanoparticles used in a simulation.
+    Create dimer of spherical nanoparticles oriented along y axis.
+
     """
+    # Calculate spherical coordinates
+    sphere1_pos = mp.Vector3(center.x, center.y - radius - separation/2, center.z)
+    sphere2_pos = mp.Vector3(center.x, center.y + radius + separation/2, center.z)
 
-    # Generate the slab coordinates
-    if y:
-        sphere1_pos = mp.Vector3(center.x, center.y - radius - separation / 2, 0)
-        sphere2_pos = mp.Vector3(center.x, center.y + radius + separation / 2, 0)
-
-    else:
-        sphere1_pos = mp.Vector3(center.x - radius - separation / 2, center.y, 0)
-        sphere2_pos = mp.Vector3(center.x + radius + separation / 2, center.y, 0)
-
-    # block = mp.Block(block_size, center=block_center, material=material)
     sphere1 = mp.Sphere(center=sphere1_pos, radius=radius, material=material)
     sphere2 = mp.Sphere(center=sphere2_pos, radius=radius, material=material)
 
     return [sphere1, sphere2]
+
+
+def spheres_x(
+    radius: float,
+    separation: float,
+    center: mp.Vector3,
+    material: mp.Medium,
+    y: bool = False,
+) -> List[mp.Sphere]:
+    """
+    Create dimer of spherical nanoparticles oriented along x axis.
+    """
+
+    # Calculate spherical coordinates
+    sphere1_pos = mp.Vector3(center.x - radius - separation / 2, center.y, center.z)
+    sphere2_pos = mp.Vector3(center.x + radius + separation / 2, center.y, center.z)
+
+    sphere1 = mp.Sphere(center=sphere1_pos, radius=radius, material=material)
+    sphere2 = mp.Sphere(center=sphere2_pos, radius=radius, material=material)
+
+    return [sphere1, sphere2]
+
+def invertedtr_y(
+    height: float,
+    separation: float,
+    center: mp.Vector3,
+    material: mp.Medium,
+    y: bool = False, 
+) -> List[mp.Vector3]:
+    """
+    Create dimer of inverted triangular nanoparticles oriented along y axis.
+    """
+
+    # Calculate vertices
+    side_length = np.sqrt(height**2/3)
+
+    vertices1 = [
+        mp.Vector3(center.x, center.y - separation/2 - height, center.z),
+        mp.Vector3(center.x - side_length, center.y - separation/2, center.z),
+        mp.Vector3(center.x + side_length, center.y - separation/2, center.z)
+    ]
+    vertices2 = [
+        mp.Vector3(center.x, center.y + separation/2 + height, center.z),
+        mp.Vector3(center.x - side_length, center.y + separation/2, center.z),
+        mp.Vector3(center.x + side_length, center.y + separation/2, center.z)
+    ]
+   
+    triangle1 = mp.Prism(vertices1, height = mp.inf, material=material)
+    triangle2 = mp.Prism(vertices2, height = mp.inf, material=material)
+
+    return [triangle1, triangle2]
+
+
+def invertedtr_x(
+    height: float,
+    separation: float,
+    center: mp.Vector3,
+    material: mp.Medium,
+    y: bool = False,
+) -> List[mp.Vector3]:
+    """
+    Create dimer of inverted triangular nanoparticles oriented along x axis.
+    """
+
+    # Create vertices
+    side_length = np.sqrt(height**2/3)
+    
+    vertices1 = [
+        mp.Vector3(center.x - separation/2 - height, center.y, center.z),
+        mp.Vector3(center.x - separation/2, center.y - side_length, center.z),
+        mp.Vector3(center.x - separation/2, center.y + side_length, center.z)
+    ]
+    vertices2 = [
+        mp.Vector3(center.x + separation/2 + height, center.y, center.z),
+        mp.Vector3(center.x + separation/2, center.y - side_length, center.z),
+        mp.Vector3(center.x + separation/2, center.y + side_length, center.z)
+    ]
+   
+    triangle1 = mp.Prism(vertices1, height = mp.inf, material=material)
+    triangle2 = mp.Prism(vertices2, height = mp.inf, material=material)
+
+    return [triangle1, triangle2]
+
