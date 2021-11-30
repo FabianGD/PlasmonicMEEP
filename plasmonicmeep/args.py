@@ -1,15 +1,15 @@
 """
-S.D.G
-
 Argument parsers for the plasmonicmeep scripts
 
+S.D.G
 """
 
 import argparse
 from functools import partial
 from typing import List, Any, Optional, Sequence, Type
-from .model import MODEL_MAPPING
 from meep import Vector3
+
+from .model import MODEL_MAPPING
 
 
 class VectorAction(argparse.Action):
