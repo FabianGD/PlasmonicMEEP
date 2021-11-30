@@ -45,12 +45,12 @@ def test_positive_type(value, rtype, other_allowed, expected):
 @pytest.mark.parametrize(
     "args",
     [
-        pytest.param("-vg".split()),
-        pytest.param("-vvvg".split()),
-        pytest.param("--disable-single-point".split()),
-        pytest.param("-csg".split()),
-        pytest.param("-x 1.0 -y 1.0".split()),
-        pytest.param("--point 0.1 0.1 --run-until 10 -w 1.1 -f 1.2 -r 200".split()),
+        pytest.param("inv-bow-y -vg".split()),
+        pytest.param("inv-bow-x -vvvg".split()),
+        pytest.param("bowtie-y --disable-single-point".split()),
+        pytest.param("bowtie-x -csg".split()),
+        pytest.param("spheres-y -x 1.0 -y 1.0".split()),
+        pytest.param("spheres-x --point 0.1 0.1 --run-until 10 -w 1.1 -f 1.2 -r 200".split()),
         pytest.param(
             "-x -1.0".split(),
             marks=pytest.mark.xfail,
