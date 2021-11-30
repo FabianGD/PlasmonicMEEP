@@ -78,7 +78,7 @@ def bow_y(
 
     # Calculate vertices
     side_length = np.sqrt(height**2/3)
-    
+
     vertices1 = [
         mp.Vector3(center.x , center.y - separation/2, center.z),
         mp.Vector3(center.x - side_length, center.y - separation/2 - height, center.z),
@@ -89,7 +89,7 @@ def bow_y(
         mp.Vector3(center.x - side_length, center.y + separation/2 + height, center.z),
         mp.Vector3(center.x + side_length, center.y + separation/2 + height, center.z)
     ]
-   
+
     triangle1 = mp.Prism(vertices1, height = mp.inf, material=material)
     triangle2 = mp.Prism(vertices2, height = mp.inf, material=material)
 
@@ -109,7 +109,7 @@ def bow_x(
 
     # Calculate vertices
     side_length = np.sqrt(height**2/3)
-    
+
     vertices1 = [
         mp.Vector3(center.x - separation/2, center.y, center.z),
         mp.Vector3(center.x - separation/2 - height, center.y - side_length, center.z),
@@ -173,7 +173,7 @@ def invertedtr_y(
     separation: float,
     center: mp.Vector3,
     material: mp.Medium,
-    y: bool = False, 
+    y: bool = False,
 ) -> List[mp.Vector3]:
     """
     Create dimer of inverted triangular nanoparticles oriented along y axis.
@@ -192,7 +192,7 @@ def invertedtr_y(
         mp.Vector3(center.x - side_length, center.y + separation/2, center.z),
         mp.Vector3(center.x + side_length, center.y + separation/2, center.z)
     ]
-   
+
     triangle1 = mp.Prism(vertices1, height = mp.inf, material=material)
     triangle2 = mp.Prism(vertices2, height = mp.inf, material=material)
 
@@ -212,7 +212,7 @@ def invertedtr_x(
 
     # Create vertices
     side_length = np.sqrt(height**2/3)
-    
+
     vertices1 = [
         mp.Vector3(center.x - separation/2 - height, center.y, center.z),
         mp.Vector3(center.x - separation/2, center.y - side_length, center.z),
@@ -223,9 +223,18 @@ def invertedtr_x(
         mp.Vector3(center.x + separation/2, center.y - side_length, center.z),
         mp.Vector3(center.x + separation/2, center.y + side_length, center.z)
     ]
-   
+
     triangle1 = mp.Prism(vertices1, height = mp.inf, material=material)
     triangle2 = mp.Prism(vertices2, height = mp.inf, material=material)
 
     return [triangle1, triangle2]
 
+
+MODEL_MAPPING = {
+    "bowtie-y": bow_y,
+    "bowtie-x": bow_x,
+    "spheres-y": spheres_y,
+    "spheres-x": spheres_x,
+    "inv-bow-y": invertedtr_y,
+    "inv-bow-x": invertedtr_x,
+}
