@@ -2,6 +2,7 @@
 Calculate FDTD using MEEP of a plasmonic nanostructure
 """
 
+import argparse
 import logging
 import sys
 from datetime import datetime
@@ -16,7 +17,7 @@ import yaml
 from meep import materials
 
 from .args import fdtd_argparsing
-from .model import two_nps
+from .model import MODEL_MAPPING
 from .utils import append_attrs, append_timegrid
 
 
@@ -81,6 +82,18 @@ def gen_stepfuncs(
     return step_functions
 
 
+def write_input_yml(outpath: Path, args: argparse.Namespace) -> None:
+    """Writes the input provided through the CLI into a file in the specified folder.
+
+    Args:
+        outpath (Path): Path in which to write the file.
+        args (argparse.Namespace): Namespace that contains the information to print.
+    """
+
+    with open(outpath / "cli_args.yml", "w", encoding="UTF-8") as f:
+        yaml.dump(args.__dict__, stream=f, default_flow_style=False)
+
+
 def main(argv: Optional[Sequence[str]] = None):
     """
     Main computation
@@ -109,8 +122,7 @@ def main(argv: Optional[Sequence[str]] = None):
 
     if mp.am_master():
         logging.info(args.__dict__)
-        with open(output_path / "cli_args.yml", "w") as f:
-            yaml.dump(args.__dict__, stream=f, default_flow_style=False)
+        write_input_yml(output_path, args)
 
     # Inner size
     sizex = args.sizex
@@ -269,11 +281,24 @@ def main(argv: Optional[Sequence[str]] = None):
         # overwrite mat to be correctly displayed
         # plot2D function does not handle correctly
         # dispersive materials
-        mat = mp.Medium(epsilon=5)
+        mat = mp.Medium(epsilon=10)
 
-    geometry = two_nps(
-        radius=0.05, separation=0.005, center=mp.Vector3(), material=mat, y=True
+    # Define geometry
+    geometry_gen = MODEL_MAPPING[args.structure]
+    geom_kwargs = dict(
+        separation=args.separation,
+        center=mp.Vector3(),
+        material=mat,
     )
+
+    # Triangular structures
+    if any(i in args.structure for i in ("bowtie", "inv-bow")):
+        # Radius of the circumscribing circle
+        geom_kwargs["height"] = (args.radius * 3) / 2
+    else:
+        geom_kwargs["radius"] = args.radius
+
+    geometry = geometry_gen(**geom_kwargs)
 
     sim = mp.Simulation(
         cell_size=cell,
