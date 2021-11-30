@@ -11,7 +11,7 @@ let
       qchem-config = {
         allowEnv = false;
         optAVX = true;
-        srcurl = "http://troja.ipc3.uni-jena.de/nix-src";
+        srcurl = "https://troja.ipc3.uni-jena.de/nix-src";
       };
     };
   };
