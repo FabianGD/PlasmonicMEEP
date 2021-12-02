@@ -1,6 +1,6 @@
 { lib, python3Packages, buildPythonApplication, nix-gitignore, joblib, h5py-mpi
 , matplotlib, meep, numpy, pandas, pyyaml, pytestCheckHook, openssh
-, additionalDevDeps ? [ ] }:
+, additionalDevDeps ? [ ], additionalShellHook ? "" }:
 
 buildPythonApplication rec {
   pname = "plasmonic-meep";
@@ -21,6 +21,8 @@ buildPythonApplication rec {
     openssh
   ];
   pytestFlagsArray = [ "tests/" ];
+
+  postShellHook = additionalShellHook;
 
   meta = with lib; {
     description =

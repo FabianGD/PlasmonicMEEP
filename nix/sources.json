@@ -1,4 +1,16 @@
 {
+    "matplotlibrc": {
+        "branch": "main",
+        "description": "Custom matplotlibrc file, used for plotting with nix",
+        "homepage": null,
+        "owner": "fabiangd",
+        "repo": "matplotlibrc",
+        "rev": "6daa2c2d4a240e8200388e158e31ea9c1682c26f",
+        "sha256": "1wphmdiw9wiykppk3857mf24mvi5kkibilb02ilbpjm48xqy20a9",
+        "type": "tarball",
+        "url": "https://github.com/fabiangd/matplotlibrc/archive/6daa2c2d4a240e8200388e158e31ea9c1682c26f.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "nixos-qchem": {
         "branch": "master",
         "description": "Nix derivations for HPC/Quantum chemistry software packages",
