@@ -6,13 +6,17 @@ import argparse
 import sys
 from pathlib import Path
 
+import matplotlib as mpl
+
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
 try:
+    from .plotting import multiplot_enhancement
     from .multiviewer import multi_slice_viewer
 except ImportError:
+    from plotting import multiplot_enhancement
     from multiviewer import multi_slice_viewer
 
 
@@ -34,6 +38,23 @@ def argparsing(*args):
     parser.add_argument(
         "-p", "--mplstyle", type=str, help="Give a matplotlib style to use. Optional."
     )
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        default=False,
+        help="Get an interactive plot of the maps to scroll through.",
+    )
+    parser.add_argument(
+        "-f",
+        "--min-freq",
+        type=float,
+        default=0.5,
+        help=(
+            "Minimum frequency (in 1/µm) to plot. "
+            "Default is 0.5 which is equivalent to 2000 nm wavelength."
+        ),
+    )
 
     args = parser.parse_args(*args)
 
@@ -46,15 +67,19 @@ def main(*args):
     """
 
     args = argparsing(*args)
+    inputfile = Path(args.file).expanduser().resolve()
+
+    if not args.interactive:
+        mpl.use("agg")
 
     if args.mplstyle is not None:
         mplstyle = Path(args.mplstyle)
         plt.style.use(mplstyle)
 
-    print("Opening {} as data file...".format(args.file))
+    print("Opening '{!s}' as data file...".format(inputfile))
 
     # Prepare frequency h5 file
-    file = h5py.File(args.file, "r")
+    file = h5py.File(inputfile, "r")
     keys = list(file.keys())
     dset = [file[key] for key in keys]
     # There should not be any more datasets
@@ -68,12 +93,7 @@ def main(*args):
     data = dset[:]
 
     # Skip N pixels from the sides to eliminate enhancement on boundaries
-    if args.xyskip:
-        skip_x = args.xyskip
-        skip_y = args.xyskip
-    else:
-        skip_x = 10
-        skip_y = 0
+    skip_x, skip_y = (args.xyskip, args.xyskip) if args.xyskip else (30, 30)
 
     for freq_idx in range(freqlen):
         tmp_data = data[skip_x:-skip_x, skip_y:-skip_y, freq_idx]
@@ -82,47 +102,63 @@ def main(*args):
         enhancement[freq_idx] = np.percentile(tmp_data, 99.9)
 
     # skip the nonphysical low-frequncy part of spectra
-    skip_freq = np.argmin(np.abs(0.5 - freqs))
+    skip_freq = np.argmin(np.abs(args.min_freq - freqs))
 
-    # Save the spectrum to file
+    # Save the spectrum to file, if requested
     if args.save:
         try:
             import pandas as pd  # pylint: disable=import-outside-toplevel
         except ImportError:
-            print("Could not import pandas. It's required for output of xls and csv data.")
+            print(
+                "Could not import pandas. "
+                "It's required for output of xls and csv data."
+            )
 
         df = pd.DataFrame()
         df["lambda"] = 1000 / freqs[skip_freq:]
         df["enhancement"] = enhancement[skip_freq:]
 
-        fpath = Path(args.file).parent
-        fname = Path(args.file).stem
+        fpath = inputfile.parent
+        fname = inputfile.stem
 
-        if args.excel:
-            df.to_excel(fpath / "".join(["spectra_", str(fname), ".xlsx"]), index=False)
-        else:
-            df.to_csv(fpath / "".join(["spectra_", str(fname), ".csv"]), index=False)
+        ext = ".xlsx" if args.excel else ".csv"
+        df.to_excel(fpath / "".join(["Spectra_", str(fname), ext]), index=False)
 
         sys.exit()
 
-    fig, ax = plt.subplots(nrows=1, ncols=1)
+    # Plot the spectrum
+    specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
     ax.plot(1000 / freqs[skip_freq:], enhancement[skip_freq:])
     ax.set_xlabel("Wavelength / nm")
     ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
 
-    fig.tight_layout()
-    plt.show()
-
+    # This rotates the data 90 degrees, as the data is saved transposed in MEEP
     data = data.transpose(1, 0, -1)
 
-    # visualize data
-    multi_slice_viewer(
-        data[skip_x:-skip_x, skip_y:-skip_y, :],
-        index_function=lambda x: 1000 / freqs[x],
-    )
+    if args.interactive:
+        # Visualize data with the multiviewer
+        multi_slice_viewer(
+            data[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
+            index_function=lambda x: 1000 / freqs[x],
+        )
+        plt.show()
 
-    plt.show()
+    else:
+        # Print spectrum file
+        specfile = inputfile.parent / "Spectrum_Enhancement_over_Wavelength.png"
+        specfig.savefig(specfile)
+        specfig.savefig(specfile.with_suffix(".svg"))
 
+        # Plot the field enhancement maps
+        multiplot_enhancement(
+            data[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
+            freqs=freqs[skip_freq:],
+            folder=inputfile.parent,
+            subfolder="maps",
+            extensions=[".png", ".svg"],
+            cmap="viridis",
+            figsize=(6, 5),
+        )
 
 if __name__ == "__main__":
     main()
