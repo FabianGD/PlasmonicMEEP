@@ -55,6 +55,15 @@ def argparsing(*args):
             "Default is 0.5 which is equivalent to 2000 nm wavelength."
         ),
     )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=Path,
+        help=(
+            "Optionally, specify an output directory. Defaults to the folder in which the "
+            "input file is located."
+        )
+    )
 
     args = parser.parse_args(*args)
 
@@ -68,6 +77,12 @@ def main(*args):
 
     args = argparsing(*args)
     inputfile = Path(args.file).expanduser().resolve()
+
+    if not args.output_dir:
+        output_dir = inputfile.parent
+    else:
+        output_dir: Path = args.output_dir.expanduser().resolve()
+        output_dir.mkdir(exist_ok=True, parents=True)
 
     if not args.interactive:
         mpl.use("agg")
@@ -118,7 +133,7 @@ def main(*args):
         df["lambda"] = 1000 / freqs[skip_freq:]
         df["enhancement"] = enhancement[skip_freq:]
 
-        fpath = inputfile.parent
+        fpath = output_dir
         fname = inputfile.stem
 
         ext = ".xlsx" if args.excel else ".csv"
@@ -145,7 +160,7 @@ def main(*args):
 
     else:
         # Print spectrum file
-        specfile = inputfile.parent / "Spectrum_Enhancement_over_Wavelength.png"
+        specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
         specfig.savefig(specfile)
         specfig.savefig(specfile.with_suffix(".svg"))
 
@@ -153,7 +168,7 @@ def main(*args):
         multiplot_enhancement(
             data[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
             freqs=freqs[skip_freq:],
-            folder=inputfile.parent,
+            folder=output_dir,
             subfolder="maps",
             extensions=[".png", ".svg"],
             cmap="viridis",
