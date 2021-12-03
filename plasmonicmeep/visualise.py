@@ -8,16 +8,11 @@ from pathlib import Path
 
 import matplotlib as mpl
 
-import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 
-try:
-    from .plotting import multiplot_enhancement
-    from .multiviewer import multi_slice_viewer
-except ImportError:
-    from plotting import multiplot_enhancement
-    from multiviewer import multi_slice_viewer
+from .plotting import multiplot_enhancement, open_h5file, plot_phasemap
+from .multiviewer import multi_slice_viewer
 
 
 def argparsing(*args):
@@ -80,6 +75,21 @@ def argparsing(*args):
         default="viridis",
         help="Matplotlib colormap to use for plotting the maps.",
     )
+    parser.add_argument(
+        "--phase",
+        action="store_true",
+        help=(
+            "Experimental: Plot phase map based on Hilbert transform of the "
+            "real-valued signal. This relies on the *-norm.h5 and *-ref.h5 data "
+            "to be present in the same folder as the enhancement file."
+        ),
+    )
+    parser.add_argument(
+        "--disable-maps",
+        action="store_false",
+        dest="plot_maps",
+        help="Whether to disable intensity map generation altogether.",
+    )
 
     args = parser.parse_args(*args)
 
@@ -107,33 +117,36 @@ def main(*args):
         mplstyle = Path(args.mplstyle)
         plt.style.use(mplstyle)
 
-    print("Opening '{!s}' as data file...".format(inputfile))
-
-    # Prepare frequency h5 file
-    file = h5py.File(inputfile, "r")
-    keys = list(file.keys())
-    dset = [file[key] for key in keys]
-    # There should not be any more datasets
-    dset = dset[0]
-
-    # Get the frequency info
-    freqs = dset.attrs["freqs"]
-    freqlen = freqs.shape[0]
-
-    enhancement = np.zeros_like(freqs)
-    data = dset[:]
-
     # Skip N pixels from the sides to eliminate enhancement on boundaries
     skip_x, skip_y = (args.xyskip, args.xyskip) if args.xyskip else (30, 30)
 
-    for freq_idx in range(freqlen):
+    map_figsize = (6, 5)
+
+    # Prepare frequency h5 file
+    dset = open_h5file(inputfile)
+
+    # Get the frequency info
+    freqs = dset.attrs["freqs"]
+
+    # skip the nonphysical low-frequncy part of spectra
+    skip_freq = np.argmin(np.abs(args.min_freq - freqs))
+
+    # This rotates the data 90 degrees, as the data is saved transposed in MEEP
+    data = dset[:].transpose(1, 0, -1)
+
+    # Calculate enhancement at each frequency
+    enhancement = np.zeros_like(freqs)
+    for freq_idx in range(freqs.shape[0]):
         tmp_data = data[skip_x:-skip_x, skip_y:-skip_y, freq_idx]
         # taking 99.9 percentile instead of maximum to eliminate
         # hotspot enhancement
         enhancement[freq_idx] = np.percentile(tmp_data, 99.9)
 
-    # skip the nonphysical low-frequncy part of spectra
-    skip_freq = np.argmin(np.abs(args.min_freq - freqs))
+    # Plot the spectrum
+    specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
+    ax.plot(1000 / freqs[skip_freq:], enhancement[skip_freq:])
+    ax.set_xlabel("Wavelength / nm")
+    ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
 
     # Save the spectrum to file, if requested
     if args.save:
@@ -149,37 +162,17 @@ def main(*args):
         df["lambda"] = 1000 / freqs[skip_freq:]
         df["enhancement"] = enhancement[skip_freq:]
 
-        fpath = output_dir
         fname = inputfile.stem
 
         ext = ".xlsx" if args.excel else ".csv"
-        df.to_excel(fpath / "".join(["Spectra_", str(fname), ext]), index=False)
+        df.to_excel(output_dir / "".join(["Spectra_", str(fname), ext]), index=False)
 
-        sys.exit()
+    # Print spectrum file
+    specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
+    specfig.savefig(specfile)
+    specfig.savefig(specfile.with_suffix(".svg"))
 
-    # Plot the spectrum
-    specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
-    ax.plot(1000 / freqs[skip_freq:], enhancement[skip_freq:])
-    ax.set_xlabel("Wavelength / nm")
-    ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
-
-    # This rotates the data 90 degrees, as the data is saved transposed in MEEP
-    data = data.transpose(1, 0, -1)
-
-    if args.interactive:
-        # Visualize data with the multiviewer
-        multi_slice_viewer(
-            data[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
-            index_function=lambda x: 1000 / freqs[x],
-        )
-        plt.show()
-
-    else:
-        # Print spectrum file
-        specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
-        specfig.savefig(specfile)
-        specfig.savefig(specfile.with_suffix(".svg"))
-
+    if args.plot_maps:
         # Plot the field enhancement maps
         multiplot_enhancement(
             data[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
@@ -188,9 +181,29 @@ def main(*args):
             subfolder="maps",
             extensions=[".png", ".svg"],
             cmap=args.colormap,
-            figsize=(6, 5),
+            figsize=map_figsize,
             resolution=args.resolution,
         )
+
+    if args.phase:
+        for polarization in ["ex", "ey"]:
+            phasefig = plot_phasemap(
+                inputfile, skip_x, polarization=polarization, figsize=map_figsize
+            )
+
+            phase_fname = (
+                output_dir / f"Map_Phase_Hilbert_{polarization.capitalize()}.png"
+            )
+            phasefig.savefig(phase_fname)
+            phasefig.savefig(phase_fname.with_suffix(".svg"))
+
+    if args.interactive:
+        # Visualize data with the multiviewer
+        multi_slice_viewer(
+            data[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
+            index_function=lambda x: 1000 / freqs[skip_freq:][x],
+        )
+        plt.show()
 
 
 if __name__ == "__main__":
