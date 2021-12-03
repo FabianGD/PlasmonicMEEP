@@ -62,7 +62,23 @@ def argparsing(*args):
         help=(
             "Optionally, specify an output directory. Defaults to the folder in which the "
             "input file is located."
-        )
+        ),
+    )
+    parser.add_argument(
+        "-r",
+        "--resolution",
+        type=int,
+        help=(
+            "Optional. Resolution of the simulation. This allows rendering the "
+            "maps with nanometer scales instead of pixels."
+        ),
+    )
+    parser.add_argument(
+        "-c",
+        "--colormap",
+        type=str,
+        default="viridis",
+        help="Matplotlib colormap to use for plotting the maps.",
     )
 
     args = parser.parse_args(*args)
@@ -171,9 +187,11 @@ def main(*args):
             folder=output_dir,
             subfolder="maps",
             extensions=[".png", ".svg"],
-            cmap="viridis",
+            cmap=args.colormap,
             figsize=(6, 5),
+            resolution=args.resolution,
         )
+
 
 if __name__ == "__main__":
     main()

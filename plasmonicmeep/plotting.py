@@ -58,6 +58,14 @@ def single_plot(
     fig.suptitle("$\\lambda = {wvl:.0f}\\,$nm".format(wvl=wvl))
     fig.colorbar(im, ax=ax)
 
+    if extent:
+        label = "Coordinate {coord} / nm"
+    else:
+        label = "Coordinate {coord} / px"
+
+    ax.set_xlabel(label.format(coord="x"))
+    ax.set_ylabel(label.format(coord="y"))
+
     for extension in extensions:
         filename = (specfolder / pattern.format(wvl=wvl)).with_suffix(extension)
         fig.savefig(filename)
@@ -120,7 +128,7 @@ def multiplot_enhancement(
     if resolution:
         max_x = map_data.shape[0] / (resolution * 1e-3)
         max_y = map_data.shape[1] / (resolution * 1e-3)
-        extent = (-max_x, max_x, -max_y, -max_y)
+        extent = (-max_x, max_x, -max_y, max_y)
     else:
         extent = None
 
@@ -135,5 +143,6 @@ def multiplot_enhancement(
         **fig_kwargs,
     )
 
+    # Plot the frames. Parallel does not work satisfactorily for large files.
     for args in zip(map_data.transpose(-1, 0, 1), freqs):
         func(*args)
