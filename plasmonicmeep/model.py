@@ -72,12 +72,9 @@ def bow_y(
 
     Args:
         height (float): The height of the individual prisms making up the dimer. 
-            Required argument (no default).
         separation (float): The separation distance between the prisms. 
-            Required argument (no default).
         center (mp.Vector3): The coordinates of the center of the dimer. 
-            Required argument (no default).
-        material (mp.Medium): The material of the dimer. Required argument (no default).
+        material (mp.Medium): The material of the dimer.
 
     Returns:
         List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
@@ -110,12 +107,9 @@ def bow_x(
 
     Args:
         height (float): The height of the individual prisms making up the dimer. 
-            Required argument (no default).
         separation (float): The separation distance between the prisms. 
-            Required argument (no default).
         center (mp.Vector3): The coordinates of the center of the dimer. 
-            Required argument (no default).
-        material (mp.Medium): The material of the dimer. Required argument (no default).
+        material (mp.Medium): The material of the dimer.
 
     Returns:
         List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
@@ -148,12 +142,9 @@ def spheres_y(
 
     Args:
         radius (float): The radius of the individual spheres making up the dimer. 
-            Required argument (no default).
         separation (float): The separation distance between the spheres. 
-            Required argument (no default).
         center (mp.Vector3): The coordinates of the center of the dimer. 
-            Required argument (no default).
-        material (mp.Medium): The material of the dimer. Required argument (no default).
+        material (mp.Medium): The material of the dimer.
 
     Returns:
         List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
@@ -176,12 +167,9 @@ def spheres_x(
 
     Args:
         radius (float): The radius of the individual spheres making up the dimer.  
-            Required argument (no default).
         separation (float): The separation distance between the spheres. 
-            Required argument (no default).
-        center (mp.Vector3): The coordinates of the center of the dimer. 
-            Required argument (no default).
-        material (mp.Medium): The material of the dimer. Required argument (no default).
+        center (mp.Vector3): The coordinates of the center of the dimer.
+        material (mp.Medium): The material of the dimer.
 
     Returns:
         List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
@@ -204,12 +192,9 @@ def invertedtr_y(
 
     Args:
         height (float): The height of the individual prisms making up the dimer. 
-            Required argument (no default).
-        separation (float): The separation distance between the prisms. 
-            Required argument (no default).
-        center (mp.Vector3): The coordinates of the center of the dimer. 
-            Required argument (no default).
-        material (mp.Medium): The material of the dimer. Required argument (no default).
+        separation (float): The separation distance between the prisms.
+        center (mp.Vector3): The coordinates of the center of the dimer.
+        material (mp.Medium): The material of the dimer.
 
     Returns:
         List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
@@ -242,12 +227,9 @@ def invertedtr_x(
 
     Args:
         height (float): The height of the individual prisms making up the dimer. 
-            Required argument (no default).
-        separation (float): The separation distance between the prisms. 
-            Required argument (no default).
-        center (mp.Vector3): The coordinates of the center of the dimer. 
-            Required argument (no default).
-        material (mp.Medium): The material of the dimer. Required argument (no default).
+        separation (float): The separation distance between the prisms.
+        center (mp.Vector3): The coordinates of the center of the dimer.
+        material (mp.Medium): The material of the dimer.
 
     Returns:
         List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
