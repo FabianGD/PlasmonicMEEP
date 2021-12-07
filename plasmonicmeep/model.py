@@ -67,7 +67,7 @@ def create_sinus_grating(
 
 def bow_y(
     height: float, separation: float, center: mp.Vector3, material: mp.Medium,
-) -> List[mp.Vector3]:
+) -> List[mp.Prism]:
     """Create bowtie-shaped dimer oriented along y axis.
 
     Args:
@@ -77,7 +77,7 @@ def bow_y(
         material (mp.Medium): The material of the dimer.
 
     Returns:
-        List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
+        List[mp.Prism]: List of geometric structures making up the dimer being simulated.
     """
 
     # Calculate vertices
@@ -102,7 +102,7 @@ def bow_y(
 
 def bow_x(
     height: float, separation: float, center: mp.Vector3, material: mp.Medium,
-) -> List[mp.Vector3]:
+) -> List[mp.Prism]:
     """Create bowtie-shaped dimer oriented along x axis.
 
     Args:
@@ -112,7 +112,7 @@ def bow_x(
         material (mp.Medium): The material of the dimer.
 
     Returns:
-        List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
+        List[mp.Prism]: List of geometric structures making up the dimer being simulated.
     """
 
     # Calculate vertices
@@ -147,7 +147,7 @@ def spheres_y(
         material (mp.Medium): The material of the dimer.
 
     Returns:
-        List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
+        List[mp.Sphere]: List of geometric structures making up the dimer being simulated.
     """
 
     # Calculate spherical coordinates
@@ -172,7 +172,7 @@ def spheres_x(
         material (mp.Medium): The material of the dimer.
 
     Returns:
-        List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
+        List[mp.Sphere]: List of geometric structures making up the dimer being simulated.
     """
 
     # Calculate spherical coordinates
@@ -187,7 +187,7 @@ def spheres_x(
 
 def invertedtr_y(
     height: float, separation: float, center: mp.Vector3, material: mp.Medium,
-) -> List[mp.Vector3]:
+) -> List[mp.Prism]:
     """Create dimer of inverted triangular nanoparticles oriented along y axis.
 
     Args:
@@ -197,7 +197,7 @@ def invertedtr_y(
         material (mp.Medium): The material of the dimer.
 
     Returns:
-        List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
+        List[mp.Prism]: List of geometric structures making up the dimer being simulated.
     """
 
     # Calculate vertices
@@ -222,7 +222,7 @@ def invertedtr_y(
 
 def invertedtr_x(
     height: float, separation: float, center: mp.Vector3, material: mp.Medium,
-) -> List[mp.Vector3]:
+) -> List[mp.Prism]:
     """Create dimer of inverted triangular nanoparticles oriented along x axis.
 
     Args:
@@ -232,7 +232,7 @@ def invertedtr_x(
         material (mp.Medium): The material of the dimer.
 
     Returns:
-        List[mp.Vector3]: List of geometric structures making up the dimer being simulated.
+        List[mp.Prism]: List of geometric structures making up the dimer being simulated.
     """
 
     # Create vertices
@@ -263,6 +263,3 @@ MODEL_MAPPING = {
     "inv-bow-y": invertedtr_y,
     "inv-bow-x": invertedtr_x,
 }
-
-if __name__ == "__main__":
-    bow_y
