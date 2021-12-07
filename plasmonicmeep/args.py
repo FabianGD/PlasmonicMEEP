@@ -1,15 +1,15 @@
 """
-S.D.G
-
 Argument parsers for the plasmonicmeep scripts
 
+S.D.G
 """
 
 import argparse
 from functools import partial
 from typing import List, Any, Optional, Sequence, Type
-
 from meep import Vector3
+
+from .model import MODEL_MAPPING
 
 
 class VectorAction(argparse.Action):
@@ -83,6 +83,33 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
     )
 
     parser.add_argument(
+        "structure",
+        choices=tuple(MODEL_MAPPING.keys()),
+        type=str,
+        # default="spheres_y"
+    )
+
+    parser.add_argument(
+        "-R",
+        "--radius",
+        default=0.05,
+        type=float,
+        help=(
+            "Radius of the structure in µm. For the triangular structures, the radius "
+            "of the circumscribing circle."
+        )
+    )
+    parser.add_argument(
+        "-S",
+        "--separation",
+        default=0.005,
+        type=float,
+        help=(
+            "Separation of the (two) structure in µm."
+        )
+    )
+
+    parser.add_argument(
         "-v",
         "--verbose",
         action="count",
@@ -91,7 +118,6 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         ),
         default=0
     )
-
 
     parser.add_argument(
         "-n",
