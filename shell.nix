@@ -29,7 +29,7 @@ with pkgs; {
       ipykernel
       black
       pylint
-      ipympl
+      # ipympl
       pytest
 
       matplotlibrc
