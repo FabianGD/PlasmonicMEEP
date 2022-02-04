@@ -1,8 +1,7 @@
-{ pkgs ? import ./nix/pkgs.nix }:
+{ pkgs ? import ./nix/pkgs.nix
+, matplotlibrc ? import (import ./nix/sources.nix).matplotlibrc { inherit pkgs; } }:
 
-let
-
-in with pkgs; {
+with pkgs; {
   production = mkShell {
     buildInputs = [
       # The custom-linked python
@@ -12,11 +11,16 @@ in with pkgs; {
       git
       # SSH is required for running with MPI
       openssh
+      matplotlibrc
     ];
+
+    additionalShellHook = ''
+      export MATPLOTLIBRC=${matplotlibrc}
+    '';
   };
 
   # This allows for a local editable(!) dev install
-  dev = pkgs.python3Packages.callPackage ./. {
+  dev = pkgs.python3Packages.callPackage ./nix/plasmonic-meep.nix {
     meep = qchem.python3.pkgs.meep;
     additionalDevDeps = with python3Packages; [
       mpi
@@ -25,9 +29,14 @@ in with pkgs; {
       ipykernel
       black
       pylint
-      ipympl
+      # ipympl
       pytest
+
+      matplotlibrc
     ];
+    additionalShellHook = ''
+      export MATPLOTLIBRC=${matplotlibrc}
+    '';
   };
 }
 
