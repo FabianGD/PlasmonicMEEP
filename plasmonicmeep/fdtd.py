@@ -292,7 +292,7 @@ def main(argv: Optional[Sequence[str]] = None):
     )
 
     # Triangular structures
-    if any(i in args.structure for i in ("bowtie", "inv-bow")):
+    if any(i in args.structure for i in ("bowtie", "inv-bow", "triangle")):
         # Radius of the circumscribing circle
         geom_kwargs["height"] = (args.radius * 3) / 2
     else:
