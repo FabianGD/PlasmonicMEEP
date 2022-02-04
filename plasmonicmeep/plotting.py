@@ -96,13 +96,13 @@ def get_extent(
 
 
 def label_ax_coordinates(
-    ax: mpl.Axes, extent: Optional[Tuple[float, float, float, float]] = None
+    ax: mpl.axes.Axes, extent: Optional[Tuple[float, float, float, float]] = None
 ) -> None:
     """
     # TODO
 
     Args:
-        ax (mpl.Axes): [description]
+        ax (mpl.axes.Axes): [description]
         extent (Optional[Tuple[float, float, float, float]], optional): [description]. Defaults to None.
     """
 
@@ -282,7 +282,7 @@ class PhaseData:
 
     @property
     def phase(self) -> npt.ArrayLike:
-        if not self._phase:
+        if self._phase is None:
             self._phase = self._calc_phase()
 
         return self._phase
@@ -294,7 +294,7 @@ def plot_phasemap(
     polarization: str = "ey",
     resolution: Optional[int] = None,
     **fig_kwargs,
-) -> mpl.Figure:
+) -> mpl.figure.Figure:
     """
     Plot a phasemap by finding the field data files from the specified file,
     calculating and plotting the relative phase using Hilbert transform and
@@ -314,7 +314,7 @@ def plot_phasemap(
         **fig_kwargs: Optional arguments given to `plt.subplots`.
 
     Returns:
-        mpl.Figure: Figure in which the phase map is plotted.
+        mpl.figure.Figure: Figure in which the phase map is plotted.
     """
 
     normfile, reffile = find_data(inputfile.parent)
