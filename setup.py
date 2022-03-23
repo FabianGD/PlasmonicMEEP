@@ -21,6 +21,7 @@ REQUIRED = [
     "matplotlib",
     "pandas",
     "pyyaml",
+    "tqdm",
 ]
 ENTRYPOINTS = {
     "console_scripts": [
