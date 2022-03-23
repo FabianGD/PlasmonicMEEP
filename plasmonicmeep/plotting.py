@@ -17,6 +17,7 @@ import numpy.typing as npt
 import scipy.signal as ssi
 
 from matplotlib.colors import LogNorm
+from tqdm.auto import tqdm
 
 from .utils import PlasmonicMEEPInputError
 
@@ -96,13 +97,13 @@ def get_extent(
 
 
 def label_ax_coordinates(
-    ax: mpl.Axes, extent: Optional[Tuple[float, float, float, float]] = None
+    ax: mpl.axes.Axes, extent: Optional[Tuple[float, float, float, float]] = None
 ) -> None:
     """
     # TODO
 
     Args:
-        ax (mpl.Axes): [description]
+        ax (mpl.axes.Axes): [description]
         extent (Optional[Tuple[float, float, float, float]], optional): [description]. Defaults to None.
     """
 
@@ -178,7 +179,7 @@ def multiplot_enhancement(
     )
 
     # Plot the frames. Parallel does not work satisfactorily for large files.
-    for args in zip(map_data.transpose(-1, 0, 1), freqs):
+    for args in tqdm(zip(map_data, freqs), total=len(freqs), desc="Maps"):
         func(*args)
 
 
@@ -294,7 +295,7 @@ def plot_phasemap(
     polarization: str = "ey",
     resolution: Optional[int] = None,
     **fig_kwargs,
-) -> mpl.Figure:
+) -> mpl.figure.Figure:
     """
     Plot a phasemap by finding the field data files from the specified file,
     calculating and plotting the relative phase using Hilbert transform and
@@ -314,7 +315,7 @@ def plot_phasemap(
         **fig_kwargs: Optional arguments given to `plt.subplots`.
 
     Returns:
-        mpl.Figure: Figure in which the phase map is plotted.
+        mpl.figure.Figure: Figure in which the phase map is plotted.
     """
 
     normfile, reffile = find_data(inputfile.parent)

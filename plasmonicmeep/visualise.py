@@ -3,6 +3,7 @@ Visualise the FDTD results.
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -10,6 +11,7 @@ import matplotlib as mpl
 
 import matplotlib.pyplot as plt
 import numpy as np
+import tqdm
 
 from .plotting import multiplot_enhancement, open_h5file, plot_phasemap
 from .multiviewer import multi_slice_viewer
@@ -76,19 +78,25 @@ def argparsing(*args):
         help="Matplotlib colormap to use for plotting the maps.",
     )
     parser.add_argument(
-        "--phase",
+        "--disable-phase",
         action="store_true",
         help=(
-            "Experimental: Plot phase map based on Hilbert transform of the "
-            "real-valued signal. This relies on the *-norm.h5 and *-ref.h5 data "
+            "Disable phase map generation. Phase maps are based on Hilbert transform of "
+            "the real-valued signal. This relies on the *-norm.h5 and *-ref.h5 data "
             "to be present in the same folder as the enhancement file."
         ),
     )
     parser.add_argument(
         "--disable-maps",
-        action="store_false",
-        dest="plot_maps",
+        action="store_true",
+        dest="disable_maps",
         help="Whether to disable intensity map generation altogether.",
+    )
+    parser.add_argument(
+        "--disable-spectrum",
+        action="store_true",
+        dest="disable_spectrum",
+        help="Whether to disable enhancement spectrum generation altogether.",
     )
 
     args = parser.parse_args(*args)
@@ -117,6 +125,12 @@ def main(*args):
         mplstyle = Path(args.mplstyle)
         plt.style.use(mplstyle)
 
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    # try:
+    #     inputfile.parent.glob(".yml")
+
     # Skip N pixels from the sides to eliminate enhancement on boundaries
     skip_x, skip_y = (args.xyskip, args.xyskip) if args.xyskip else (30, 30)
 
@@ -131,51 +145,60 @@ def main(*args):
     # skip the nonphysical low-frequncy part of spectra
     skip_freq = np.argmin(np.abs(args.min_freq - freqs))
 
-    # This rotates the data 90 degrees, as the data is saved transposed in MEEP
-    data = dset[:].transpose(1, 0, -1)
+    if not args.disable_spectrum:
 
-    # Calculate enhancement at each frequency
-    enhancement = np.zeros_like(freqs)
-    for freq_idx in range(freqs.shape[0]):
-        tmp_data = data[skip_x:-skip_x, skip_y:-skip_y, freq_idx]
-        # taking 99.9 percentile instead of maximum to eliminate
-        # hotspot enhancement
-        enhancement[freq_idx] = np.percentile(tmp_data, 99.9)
+        logger.info("Calculating enhancement over frequency.")
 
-    # Plot the spectrum
-    specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
-    ax.plot(1000 / freqs[skip_freq:], enhancement[skip_freq:])
-    ax.set_xlabel("Wavelength / nm")
-    ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
+        # Calculate enhancement at each frequency
+        enhancement = np.zeros_like(freqs)
+        for freq_idx in tqdm.trange(freqs.shape[0], desc="Enhancement"):
 
-    # Save the spectrum to file, if requested
-    if args.save:
-        try:
-            import pandas as pd  # pylint: disable=import-outside-toplevel
-        except ImportError:
-            print(
-                "Could not import pandas. "
-                "It's required for output of xls and csv data."
-            )
+            # Allocating tmp_data and directly transpose the data
+            tmp_data = np.array(dset[skip_y:-skip_y, skip_x:-skip_x, freq_idx]).transpose(1, 0)
 
-        df = pd.DataFrame()
-        df["lambda"] = 1000 / freqs[skip_freq:]
-        df["enhancement"] = enhancement[skip_freq:]
+            # taking 99.9 percentile instead of maximum to eliminate
+            # hotspot enhancement
+            enhancement[freq_idx] = np.percentile(tmp_data, 99.9)
 
-        fname = inputfile.stem
+            # Deleting the tmp_data to not accumulate data
+            del tmp_data
 
-        ext = ".xlsx" if args.excel else ".csv"
-        df.to_excel(output_dir / "".join(["Spectra_", str(fname), ext]), index=False)
+        logger.info("Done calculating enhancement over frequency.")
 
-    # Print spectrum file
-    specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
-    specfig.savefig(specfile)
-    specfig.savefig(specfile.with_suffix(".svg"))
+        # Plot the spectrum
+        specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
+        ax.plot(1000 / freqs[skip_freq:], enhancement[skip_freq:])
+        ax.set_xlabel("Wavelength / nm")
+        ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
 
-    if args.plot_maps:
+        # Save the spectrum to file, if requested
+        if args.save:
+            try:
+                import pandas as pd  # pylint: disable=import-outside-toplevel
+            except ImportError:
+                print(
+                    "Could not import pandas. "
+                    "It's required for output of xls and csv data."
+                )
+
+            df = pd.DataFrame()
+            df["lambda"] = 1000 / freqs[skip_freq:]
+            df["enhancement"] = enhancement[skip_freq:]
+
+            fname = inputfile.stem
+
+            ext = ".xlsx" if args.excel else ".csv"
+            df.to_excel(output_dir / "".join(["Spectra_", str(fname), ext]), index=False)
+
+        # Print spectrum file
+        specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
+        specfig.savefig(specfile)
+        specfig.savefig(specfile.with_suffix(".svg"))
+
+    if not args.disable_maps:
         # Plot the field enhancement maps
         multiplot_enhancement(
-            data[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
+            dset[skip_x:-skip_x, skip_y:-skip_y, skip_freq:],
             freqs=freqs[skip_freq:],
             folder=output_dir,
             subfolder="maps",
@@ -185,7 +208,7 @@ def main(*args):
             resolution=args.resolution,
         )
 
-    if args.phase:
+    if not args.disable_phase:
         for polarization in ["ex", "ey"]:
             phasefig = plot_phasemap(
                 inputfile, skip_x, polarization=polarization, figsize=map_figsize
