@@ -1,8 +1,8 @@
-{ lib, python3Packages, buildPythonApplication, nix-gitignore, joblib, h5py-mpi
+{ lib, python3Packages, buildPythonPackage, nix-gitignore, joblib, h5py-mpi
 , matplotlib, meep, numpy, pandas, pyyaml, pytestCheckHook, openssh
 , additionalDevDeps ? [ ], additionalShellHook ? "" }:
 
-buildPythonApplication rec {
+buildPythonPackage rec {
   pname = "plasmonic-meep";
   version = "0.5.1";
   src = nix-gitignore.gitignoreSource [ ] ../.;
