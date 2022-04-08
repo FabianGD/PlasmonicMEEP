@@ -5,6 +5,7 @@ Plotting utilities
 from dataclasses import dataclass
 from functools import partial
 import logging
+import multiprocessing
 from pathlib import Path
 from typing import Optional, Tuple, Union, Iterable
 
@@ -12,7 +13,9 @@ import matplotlib as mpl
 
 import h5py
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
+from isort import file
 import numpy.typing as npt
 import scipy.signal as ssi
 
@@ -56,6 +59,10 @@ def single_plot(
             Parameter `wvl` will be rendered with the wavelength in nanometer.
     """
 
+    mpl.use("agg")
+
+    print("Started single plot function.")
+
     # Calculate the wavelength
     wvl = 1000 / freq
 
@@ -67,9 +74,15 @@ def single_plot(
     fig.suptitle("$\\lambda = {wvl:.0f}\\,$nm".format(wvl=wvl))
     fig.colorbar(im, ax=ax)
 
+    print("Did the plotting.")
+
     for extension in extensions:
         filename = (specfolder / pattern.format(wvl=wvl)).with_suffix(extension)
+
         fig.savefig(filename)
+
+    print("Did the saving of the figure.")
+
 
     plt.close(fig)
 
@@ -78,10 +91,14 @@ def get_extent(
     shape: Iterable[int], resolution: Optional[int] = None
 ) -> Optional[Tuple[float, float, float, float]]:
 
-    """# TODO
+    """
+    Calculate the extent used in an `ax.imshow` call. Will output `None` if no
+    resolution is given.
 
     Returns:
-        [type]: [description]
+        Optional[Tuple[float, float, float, float]]: If resolution is given,
+            a four-tuple describing the minimum and maximum values in x- and y-direction.
+            If resolution is not given, return None.
     """
 
     # Calculate extent, if required
@@ -99,11 +116,13 @@ def label_ax_coordinates(
     ax: mpl.axes.Axes, extent: Optional[Tuple[float, float, float, float]] = None
 ) -> None:
     """
-    # TODO
+    Label a matplotlib (imshow) axis according to the extent given.
+    If extent is None, the coordinate unit is given as pixel.
 
     Args:
-        ax (mpl.axes.Axes): [description]
-        extent (Optional[Tuple[float, float, float, float]], optional): [description]. Defaults to None.
+        ax (mpl.axes.Axes): Axes to label in x- and y-direction.
+        extent (Optional[Tuple[float, float, float, float]], optional): Extent tuple or none.
+        Defaults to None.
     """
 
     if extent:
@@ -116,7 +135,7 @@ def label_ax_coordinates(
 
 
 def multiplot_enhancement(
-    map_data: Union[npt.ArrayLike, h5py.Dataset],
+    map_data: npt.ArrayLike,
     freqs: Iterable[float],
     folder: Path,
     resolution: Optional[int] = None,
@@ -177,24 +196,33 @@ def multiplot_enhancement(
         **fig_kwargs,
     )
 
-    # Plot the frames. Parallel does not work satisfactorily for large files.
-    for args in zip(map_data.transpose(-1, 0, 1), freqs):
-        func(*args)
+    print(map_data.shape)
+
+    # https://britishgeologicalsurvey.github.io/science/python-forking-vs-spawn/
+    with multiprocessing.get_context("spawn").Pool() as pool:
+        pool.starmap(func, zip(np.split(map_data, map_data.shape[-1], axis=-1), freqs))
 
 
-def find_data(folder: Path) -> Tuple[Path, Path]:
+def find_data(
+    folder: Path, norm_pattern: str = "*-norm.h5", ref_pattern: str = "*-ref.h5"
+) -> Tuple[Path, Path]:
 
-    """# TODO
+    """Find reference and enhanced field HDF5 data in the folder given.
+
+    Args:
+        folder (Path): Folder path to search for the data in.
+        norm_pattern (str): Glob pattern to use for the norm data. Defaults to "*-norm.h5".
+        ref_pattern (str): Glob pattern to use for the ref data. Defaults to "*-ref.h5".
 
     Raises:
-        PlasmonicMEEPInputError: [description]
+        PlasmonicMEEPInputError: If there is no file in the folder that fulfills the patterns given.
 
     Returns:
-        [type]: [description]
+        Tuple[Path, Path]: Tuple of the norm and ref file path.
     """
 
-    norm = list(folder.glob("*-norm.h5"))
-    ref = list(folder.glob("*-ref.h5"))
+    norm = list(folder.glob(norm_pattern))
+    ref = list(folder.glob(ref_pattern))
 
     if len(norm) != 1 or len(ref) != 1:
         raise PlasmonicMEEPInputError(
@@ -206,18 +234,25 @@ def find_data(folder: Path) -> Tuple[Path, Path]:
 
 
 def inner(a: npt.ArrayLike, b: npt.ArrayLike) -> npt.ArrayLike:
-    """# TODO"""
+    """Calculate the inner product of two arrays via `np.einsum`."""
     return np.einsum("...a,...a->...", a, b)
 
 
-def get_phasedata(
-    file: Path, polarization: str = "ex", xy_skip: int = 30
+def get_analytical_signal(
+    file: Path, slice_xy: slice, polarization: str = "ex"
 ) -> npt.ArrayLike:
+    """
+    Open the specified datafile and calculate the analytical signal in the
+    corresponding polarization.
 
-    """# TODO
+    Args:
+        file (Path): The HDF5 datafile to open.
+        slice_xy (slice, optional): Slice object to exctract data in x- and y-direction.
+        polarization (str, optional): The polarization to utilize. Defaults to "ex".
 
     Returns:
-        [type]: [description]
+        npt.ArrayLike: The analytical signal calculated via `scipy.signal.hilbert`
+            (i.e., via Hilbert transform)
     """
 
     with h5py.File(file, "r") as f:
@@ -234,7 +269,7 @@ def get_phasedata(
 
         # Assert square dataset
         shape = dshape[0]
-        assert shape == dshape[1]
+        assert shape == dshape[1], "Dataset is not square."
 
         # Read the real part of the dataset
         try:
@@ -244,24 +279,24 @@ def get_phasedata(
 
         # Getting the real array and transposing it
         # old data is stored 90 deg. rotated
-        slice_real = np.array(real_ds[xy_skip:-xy_skip, xy_skip:-xy_skip, :]).transpose(
-            (1, 0, 2)
-        )
+
+        # Build a new array with reduced
+        real_data = read_h5ds_direct(real_ds, np.s_[slice_xy, slice_xy, :]).transpose((1, 0, 2))
+
+        print("Extracted shape: {}".format(real_data.shape))
 
         # Calculate the analytical signal using Hilbert transform
-        analytical_signal = ssi.hilbert(slice_real, axis=-1)
+        analytical_signal = ssi.hilbert(real_data, axis=-1)
 
-        del slice_real
+        del real_data
 
     return analytical_signal
 
 
 @dataclass
 class PhaseData:
-    """# TODO
-
-    Returns:
-        [type]: [description]
+    """
+    Dataclass to facilitate phase calculation. Still \# TODO
     """
 
     norm: npt.ArrayLike
@@ -270,14 +305,7 @@ class PhaseData:
     _phase: Optional[npt.ArrayLike] = None
 
     def _calc_phase(self, arctan: bool = True) -> npt.ArrayLike:
-        phaseH = inner(self.ref, np.conj(self.norm)) / np.sqrt(
-            inner(self.ref, np.conj(self.ref)) * inner(self.norm, np.conj(self.norm))
-        )
-        if arctan:
-            phase = np.arctan(phaseH.imag / phaseH.real)
-        else:
-            phase = np.angle(phaseH)
-
+        phase = calc_phase_from_analytical_signal(self.norm, self.ref, arctan=arctan)
         return phase
 
     @property
@@ -288,9 +316,35 @@ class PhaseData:
         return self._phase
 
 
+def calc_phase_from_analytical_signal(
+    norm: npt.ArrayLike, ref: npt.ArrayLike, arctan=True
+) -> npt.ArrayLike:
+    """Relative phase calculation based on analytical (complex) signals.
+
+    Args:
+        norm (npt.ArrayLike): 1D-arraylike analytical (complex) signal of the norm data.
+        ref (npt.ArrayLike): 1D-arraylike analytical (complex) signal of the reference data.
+        arctan (bool, optional): Whether to use `np.arctan` to calculate the phase
+            (gives phase in [-pi/2, pi/2]) Alternative is `np.angle`, which gives phase
+            in [-pi, pi]. Defaults to True.
+
+    Returns:
+        npt.ArrayLike: Relative phase between the norm and reference data.
+    """
+    phaseH = inner(ref, np.conj(norm)) / np.sqrt(
+        inner(ref, np.conj(ref)) * inner(norm, np.conj(norm))
+    )
+    if arctan:
+        phase = np.arctan(phaseH.imag / phaseH.real)
+    else:
+        phase = np.angle(phaseH)
+
+    return phase
+
+
 def plot_phasemap(
     inputfile: Path,
-    skip_xy: int,
+    slice_xy: slice,
     polarization: str = "ey",
     resolution: Optional[int] = None,
     **fig_kwargs,
@@ -303,7 +357,7 @@ def plot_phasemap(
     Args:
         inputfile (Path): Path to a file in the same folder as the field files.
 
-        skip_x (int): Number of pixels to skip on either side of both dimensions.
+        slice_xy (slice): Slice object used to index both x and y coordinates.
 
         polarization (str, optional): Polarization component to plot the phase from.
             Defaults to "ey".
@@ -318,9 +372,10 @@ def plot_phasemap(
     """
 
     normfile, reffile = find_data(inputfile.parent)
-    kwargs = dict(xy_skip=skip_xy, polarization=polarization)
+    kwargs = dict(slice_xy=slice_xy, polarization=polarization)
     phase_data = PhaseData(
-        get_phasedata(normfile, **kwargs), get_phasedata(reffile, **kwargs)
+        get_analytical_signal(normfile, **kwargs),
+        get_analytical_signal(reffile, **kwargs),
     )
 
     extent = get_extent(phase_data.phase.shape, resolution=resolution)
@@ -340,7 +395,7 @@ def plot_phasemap(
     return phasefig
 
 
-def open_h5file(h5file: Path) -> h5py.Dataset:
+def open_h5file(h5file: Path) -> Tuple[h5py.File, h5py.Dataset]:
     """Open the first found hdf5 dataset found in the file. Useful for single-dataset files like the enhancement data files.
 
     Args:
@@ -358,4 +413,23 @@ def open_h5file(h5file: Path) -> h5py.Dataset:
     # There should not be any more datasets
     dset = dset[0]
 
-    return dset
+    return file, dset
+
+
+def read_h5ds_direct(
+    dataset: h5py.Dataset, slice_selector: Iterable[slice]
+) -> npt.ArrayLike:
+
+    dataset_shape = dataset.shape
+
+    # Build shape
+    new_shape = []
+    for length, sel in zip(dataset_shape, slice_selector):
+        (start, stop, step) = sel.indices(length)
+        new_length = (stop - start) // step
+        new_shape.append(new_length)
+
+    new_arr = np.zeros(tuple(new_shape), dtype=dataset.dtype)
+    dataset.read_direct(new_arr, slice_selector)
+
+    return new_arr
