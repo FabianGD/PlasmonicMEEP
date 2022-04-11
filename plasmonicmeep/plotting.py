@@ -260,10 +260,6 @@ def get_analytical_signal(
         dshape = f[keys[0]].shape
         print("Dataset shape: ", dshape)
 
-        # Assert square dataset
-        shape = dshape[0]
-        assert shape == dshape[1], "Dataset is not square."
-
         # Read the real part of the dataset
         try:
             real_ds = f[polarization + ".r"]

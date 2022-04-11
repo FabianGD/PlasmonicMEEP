@@ -234,10 +234,12 @@ def main(*args):
 
     if args.interactive:
         # Visualize data with the multiviewer
-        multi_slice_viewer(
-            data = read_h5ds_direct(
+        data = read_h5ds_direct(
                 dset, slice_selector=np.s_[slice_xy, slice_xy, skip_freq:]
-            ).transpose(1, 0, -1),
+        ).transpose(1, 0, -1)
+
+        multi_slice_viewer(
+            volume=data,
             index_function=lambda x: 1000 / freqs[skip_freq:][x],
         )
         plt.show()
