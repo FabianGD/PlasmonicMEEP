@@ -61,8 +61,6 @@ def single_plot(
 
     mpl.use("agg")
 
-    print("Started single plot function.")
-
     # Calculate the wavelength
     wvl = 1000 / freq
 
@@ -74,15 +72,10 @@ def single_plot(
     fig.suptitle("$\\lambda = {wvl:.0f}\\,$nm".format(wvl=wvl))
     fig.colorbar(im, ax=ax)
 
-    print("Did the plotting.")
-
     for extension in extensions:
         filename = (specfolder / pattern.format(wvl=wvl)).with_suffix(extension)
 
         fig.savefig(filename)
-
-    print("Did the saving of the figure.")
-
 
     plt.close(fig)
 

@@ -155,10 +155,10 @@ def main(*args):
     # Calculate enhancement at each frequency
     if args.save or args.plot_spectrum:
 
-        # This rotates the data 90 degrees, as the data is saved transposed in MEEP
+        # Its not necessary to rotate the data used for spectrum calculation here.
         data = read_h5ds_direct(
             dset, slice_selector=np.s_[slice_xy, slice_xy, skip_freq:]
-        ).transpose(1, 0, -1)
+        )
 
         enhancement = np.zeros_like(freqs)
         for freq_idx in range(freqs.shape[0]):
@@ -235,7 +235,9 @@ def main(*args):
     if args.interactive:
         # Visualize data with the multiviewer
         multi_slice_viewer(
-            data[slice_xy, slice_xy, skip_freq:],
+            data = read_h5ds_direct(
+                dset, slice_selector=np.s_[slice_xy, slice_xy, skip_freq:]
+            ).transpose(1, 0, -1),
             index_function=lambda x: 1000 / freqs[skip_freq:][x],
         )
         plt.show()
