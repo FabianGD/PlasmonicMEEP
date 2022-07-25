@@ -86,6 +86,9 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         "structure",
         choices=tuple(MODEL_MAPPING.keys()),
         type=str,
+        help=(
+            "Structure to use for the FDTD simulation. Can be easily extended by editing plasmonicmeep/model.py."
+        )
         # default="spheres_y"
     )
 
@@ -96,7 +99,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         type=float,
         help=(
             "Radius of the structure in µm. For the triangular structures, the radius "
-            "of the circumscribing circle."
+            "of the circumscribing circle. Defaults to 0.05."
         )
     )
     parser.add_argument(
@@ -105,7 +108,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         default=0.005,
         type=float,
         help=(
-            "Separation of the (two) structure in µm."
+            "Separation of the (two) structure in µm. Defaults to 0.005."
         )
     )
 
@@ -134,7 +137,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         "--sizex",
         type=partial(positive_type, rtype=float),
         default=0.5,
-        help="The size of the box in µm in the x direction.",
+        help="The size of the box in µm in the x direction. Defaults to 0.5",
     )
 
     parser.add_argument(
@@ -142,7 +145,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         "--sizey",
         type=partial(positive_type, rtype=float),
         default=0.5,
-        help="The size of the box in µm in the y direction.",
+        help="The size of the box in µm in the y direction. Defaults to 0.5",
     )
 
     parser.add_argument(
@@ -150,7 +153,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         "--resolution",
         type=partial(positive_type, rtype=int),
         default=200,
-        help="The resolution of the box (nr. of pixels per µm?)",
+        help="The resolution of the box (nr. of pixels per µm). Defaults to 200.",
     )
 
     parser.add_argument(
@@ -160,7 +163,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         default=1.5,
         help=(
             "Change the central frequency of the incident laser field. "
-            "Frequency is given in units of 1/µm."
+            "Frequency is given in units of 1/µm. Defaults to 1.5 (667 nm)."
         ),
     )
 
@@ -171,7 +174,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         default=1.5,
         help=(
             "Change the frequency width of the incident laser field. "
-            "Pulse with is given in units of µm."
+            "Pulse with is given in units of µm. Defaults to 1.5."
         ),
     )
 
@@ -195,7 +198,7 @@ def fdtd_argparsing(args: Optional[Sequence[str]] = None):
         help=(
             "Specify the location of the single point on which the "
             "field is output from. Defaults to the center of the 2D box, "
-            "which is at [0, 0]"
+            "which is at [0, 0]."
         ),
     )
 
