@@ -3,6 +3,7 @@ Visualise the FDTD results.
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -10,6 +11,7 @@ import matplotlib as mpl
 
 import matplotlib.pyplot as plt
 import numpy as np
+import tqdm
 
 from .plotting import (
     multiplot_enhancement,
@@ -56,7 +58,7 @@ def argparsing(*args):
         type=int,
         default=1,
         dest="every",
-        help="Whether to disable intensity map generation altogether.",
+        help="Number of grid points to skip.",
     )
 
     parser.add_argument(
@@ -85,30 +87,25 @@ def argparsing(*args):
         help="Matplotlib colormap to use for plotting the maps.",
     )
     parser.add_argument(
-        "--phase",
+        "--disable-phase",
         action="store_true",
         help=(
-            "Plot phase map based on Hilbert transform of the "
-            "real-valued signal. This relies on the *-norm.h5 and *-ref.h5 data "
+            "Disable phase map generation. Phase maps are based on Hilbert transform of "
+            "the real-valued signal. This relies on the *-norm.h5 and *-ref.h5 data "
             "to be present in the same folder as the enhancement file."
         ),
     )
     parser.add_argument(
-        "--plot-spectrum",
+        "--disable-maps",
         action="store_true",
-        help=("Plot the enhancement spectrum."),
+        dest="disable_maps",
+        help="Whether to disable intensity map generation altogether.",
     )
     parser.add_argument(
-        "--plot-maps",
+        "--disable-spectrum",
         action="store_true",
-        dest="plot_maps",
-        help="Plot intensity maps for the individual frequencies.",
-    )
-    parser.add_argument(
-        "-s", "--save", action="store_true", help="Save calculated spectrum to file"
-    )
-    parser.add_argument(
-        "-x", "--excel", action="store_true", help="Save to excel insted of CSV"
+        dest="disable_spectrum",
+        help="Whether to disable enhancement spectrum generation altogether.",
     )
 
     args = parser.parse_args(*args)
@@ -137,6 +134,12 @@ def main(*args):
         mplstyle = Path(args.mplstyle)
         plt.style.use(mplstyle)
 
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    # try:
+    #     inputfile.parent.glob(".yml")
+
     # Skip N pixels from the sides to eliminate enhancement on boundaries
     slice_xy = slice(args.xyskip, -args.xyskip, args.every)
 
@@ -150,57 +153,60 @@ def main(*args):
 
     # skip the nonphysical low-frequncy part of spectra
     skip_freq = np.argmin(np.abs(args.min_freq - freqs))
+
     freqs = freqs[skip_freq:]
 
     # Calculate enhancement at each frequency
-    if args.save or args.plot_spectrum:
 
-        # Its not necessary to rotate the data used for spectrum calculation here.
-        data = read_h5ds_direct(
-            dset, slice_selector=np.s_[slice_xy, slice_xy, skip_freq:]
-        )
+    if not args.disable_spectrum:
+
+        logger.info("Calculating enhancement over frequency.")
 
         enhancement = np.zeros_like(freqs)
-        for freq_idx in range(freqs.shape[0]):
-            tmp_data = data[..., freq_idx]
+        for freq_idx in tqdm.trange(freqs.shape[0], desc="Enhancement"):
+
+            tmp_data = read_h5ds_direct(
+                dset, slice_selector=np.s_[slice_xy, slice_xy, freq_idx]
+            )
+
             # taking 99.9 percentile instead of maximum to eliminate
             # hotspot enhancement
             enhancement[freq_idx] = np.percentile(tmp_data, 99.9)
+            del tmp_data
 
-        if args.plot_spectrum:
-            # Plot the spectrum
-            specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
-            ax.plot(1000 / freqs, enhancement)
-            ax.set_xlabel("Wavelength / nm")
-            ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
+        logger.info("Done calculating enhancement over frequency.")
 
-            # Print spectrum file
-            specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
-            specfig.savefig(specfile)
-            specfig.savefig(specfile.with_suffix(".svg"))
+        # Plot the spectrum
+        specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
+        ax.plot(1000 / freqs[skip_freq:], enhancement[skip_freq:])
+        ax.set_xlabel("Wavelength / nm")
+        ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
 
-        # Save the spectrum to file, if requested
-        if args.save:
-            try:
-                import pandas as pd  # pylint: disable=import-outside-toplevel
-            except ImportError:
-                print(
-                    "Could not import pandas. "
-                    "It's required for output of xls and csv data."
-                )
+        # # Save the spectrum to file, if requested
+        # if args.save:
+        #     try:
+        #         import pandas as pd  # pylint: disable=import-outside-toplevel
+        #     except ImportError:
+        #         print(
+        #             "Could not import pandas. "
+        #             "It's required for output of xls and csv data."
+        #         )
 
-            df = pd.DataFrame()
-            df["lambda"] = 1000 / freqs
-            df["enhancement"] = enhancement
+        #     df = pd.DataFrame()
+        #     df["lambda"] = 1000 / freqs[skip_freq:]
+        #     df["enhancement"] = enhancement[skip_freq:]
 
-            fname = inputfile.stem
+        #     fname = inputfile.stem
 
-            ext = ".xlsx" if args.excel else ".csv"
-            df.to_excel(
-                output_dir / "".join(["Spectra_", str(fname), ext]), index=False
-            )
+        #     ext = ".xlsx" if args.excel else ".csv"
+        #     df.to_excel(output_dir / "".join(["Spectra_", str(fname), ext]), index=False)
 
-    if args.plot_maps:
+        # Print spectrum file
+        specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
+        specfig.savefig(specfile)
+        specfig.savefig(specfile.with_suffix(".svg"))
+
+    if not args.disable_maps:
         # Plot the field enhancement maps
         data = read_h5ds_direct(
             dset, slice_selector=np.s_[slice_xy, slice_xy, skip_freq:]
@@ -217,7 +223,7 @@ def main(*args):
             resolution=args.resolution,
         )
 
-    if args.phase:
+    if not args.disable_phase:
         for polarization in ["ex", "ey"]:
             phasefig = plot_phasemap(
                 inputfile,

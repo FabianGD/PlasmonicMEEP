@@ -20,6 +20,7 @@ import numpy.typing as npt
 import scipy.signal as ssi
 
 from matplotlib.colors import LogNorm
+from tqdm.auto import tqdm
 
 from .utils import PlasmonicMEEPInputError
 
@@ -414,9 +415,14 @@ def read_h5ds_direct(
     # Build shape
     new_shape = []
     for length, sel in zip(dataset_shape, slice_selector):
-        (start, stop, step) = sel.indices(length)
-        new_length = (stop - start) // step
-        new_shape.append(new_length)
+
+        try:
+            (start, stop, step) = sel.indices(length)
+            new_length = (stop - start) // step
+            new_shape.append(new_length)
+
+        except AttributeError:  # If for example an integer is given.
+            logging.debug("Found {} typed slice parameter. Add no new dimension to shape.")
 
     new_arr = np.zeros(tuple(new_shape), dtype=dataset.dtype)
     dataset.read_direct(new_arr, slice_selector)

@@ -1,5 +1,5 @@
 { lib, python3Packages, buildPythonPackage, nix-gitignore, joblib, h5py-mpi
-, matplotlib, meep, numpy, pandas, pyyaml, pytestCheckHook, openssh
+, matplotlib, meep, numpy, pandas, pyyaml, pytestCheckHook, openssh, tqdm
 , additionalDevDeps ? [ ], additionalShellHook ? "" }:
 
 buildPythonPackage rec {
@@ -10,7 +10,7 @@ buildPythonPackage rec {
   nativeBuildInputs = additionalDevDeps;
 
   propagatedBuildInputs =
-    [ joblib h5py-mpi matplotlib meep numpy pandas pyyaml ];
+    [ joblib h5py-mpi matplotlib meep numpy pandas pyyaml tqdm ];
 
   doCheck = true;
 
