@@ -15,7 +15,6 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-from isort import file
 import numpy.typing as npt
 import scipy.signal as ssi
 
