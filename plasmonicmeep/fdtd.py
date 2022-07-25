@@ -3,6 +3,7 @@ Calculate FDTD using MEEP of a plasmonic nanostructure
 """
 
 import argparse
+from inspect import signature
 import logging
 import sys
 from datetime import datetime
@@ -286,17 +287,22 @@ def main(argv: Optional[Sequence[str]] = None):
     # Define geometry
     geometry_gen = MODEL_MAPPING[args.structure]
     geom_kwargs = dict(
-        separation=args.separation,
         center=mp.Vector3(),
         material=mat,
     )
 
     # Triangular structures
-    if any(i in args.structure for i in ("bowtie", "inv-bow")):
+    if any(i in args.structure for i in ("bowtie", "inv-bow", "triangle")):
         # Radius of the circumscribing circle
         geom_kwargs["height"] = (args.radius * 3) / 2
     else:
         geom_kwargs["radius"] = args.radius
+
+    # Single structures
+    if "offset" in str(signature(geometry_gen)):
+        geom_kwargs["offset"] = args.separation
+    else:
+        geom_kwargs["separation"] = args.separation
 
     geometry = geometry_gen(**geom_kwargs)
 
