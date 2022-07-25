@@ -27,6 +27,9 @@ def argparsing():
     parser.add_argument("savefile", type=str, help="File to save results")
     parser.add_argument("-s", "--size", type=int, help="Batch size", default=100)
     parser.add_argument(
+        "-n", "--parallel", type=int, help="Number of cores to use", default=4
+    )
+    parser.add_argument(
         "--loglevel",
         type=str,
         choices=["DEBUG", "INFO", "WARNING"],
@@ -137,20 +140,30 @@ def main():
         logging.info("Iteration {} from {}".format(i, x_length))
         bshape = data[0].shape
 
-        enh_data = np.zeros((batch_size, bshape[1], freq_length))
-        ref_data = np.zeros((batch_size, bshape[1], freq_length))
+        # Properly calculate batch size based on what is left
+        curr_batch_size = min(bshape[0] - i, batch_size)
+        logging.info("Current (true) batch size is {}".format(curr_batch_size))
+
+        enh_data = np.zeros((curr_batch_size, bshape[1], freq_length))
+        ref_data = np.zeros((curr_batch_size, bshape[1], freq_length))
 
         for component_e, component_r in zip(data, reference):
             logging.info("Processing component {} of data.".format(component_e.name))
             logging.info("Processing component {} of ref.".format(component_r.name))
 
-            enh_arr = read_h5ds_direct(component_e, np.s_[i : i + batch_size, :, :])
-            ref_arr = read_h5ds_direct(component_r, np.s_[i : i + batch_size, :, :])
+            logging.info("Start reading the data ...")
+            enh_arr = read_h5ds_direct(
+                component_e, np.s_[i : i + curr_batch_size, :, :]
+            )
+            ref_arr = read_h5ds_direct(
+                component_r, np.s_[i : i + curr_batch_size, :, :]
+            )
 
-            enh_data += get_power(enh_arr)
-            ref_data += get_power(ref_arr)
+            logging.info("Processing the data ...")
+            enh_data += get_power(enh_arr, nproc=args.parallel)
+            ref_data += get_power(ref_arr, nproc=args.parallel)
 
-        dset[i : i + batch_size, ...] = enh_data / ref_data
+        dset[i : i + curr_batch_size, ...] = enh_data / ref_data
 
     # Close all the files.
     dfile.close()
