@@ -269,10 +269,12 @@ def get_analytical_signal(
         # Getting the real array and transposing it
         # old data is stored 90 deg. rotated
 
+        print("Start reading the data.")
+
         # Build a new array with reduced
         real_data = read_h5ds_direct(real_ds, np.s_[slice_xy, slice_xy, :]).transpose((1, 0, 2))
 
-        print("Extracted shape: {}".format(real_data.shape))
+        print("Finished reading the data. Extracted shape: {}".format(real_data.shape))
 
         # Calculate the analytical signal using Hilbert transform
         analytical_signal = ssi.hilbert(real_data, axis=-1)
@@ -421,7 +423,7 @@ def open_h5file(h5file: Path) -> Tuple[h5py.File, h5py.Dataset]:
 
 
 def read_h5ds_direct(
-    dataset: h5py.Dataset, slice_selector: Iterable[slice]
+    dataset: h5py.Dataset, slice_selector: Iterable[slice | int | None]
 ) -> npt.ArrayLike:
 
     dataset_shape = dataset.shape
