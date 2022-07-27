@@ -315,6 +315,52 @@ def invertedtr_x(
     return [triangle1, triangle2]
 
 
+def diamond(
+    radius: float,
+    offset: float,
+    center: mp.Vector3,
+    material: mp.Medium,
+    direction: str = "y",
+    centered=True,
+) -> List[mp.Prism]:
+    """Create a single diamond-shaped nanoparticle oriented along x or y axis.
+
+    Args:
+        radius (float): The radius of the diamond, measured between tip and corner.
+        offset (float): Distance by which between the NP is displaced from the center.
+        center (mp.Vector3): The coordinates of the center of the structure.
+        material (mp.Medium): The material of the NP.
+        centered (bool): Whether the structure is centered around the center (True) or
+            around the origin plus half the radius (False).
+
+    Returns:
+        List[mp.Sphere]: Single-item list of the nanodiamond.
+    """
+
+    if centered:
+        xy = [center.x, center.y]
+    else:
+        if direction == "y":
+            xy = [center.x, center.y + radius]
+        else:
+            xy = [center.x + radius, center.y]
+
+    if direction == "y":
+        xy[1] += offset
+    else:
+        xy[0] += offset
+
+    x, y = xy
+    coords = [
+        mp.Vector3(x - radius, y),
+        mp.Vector3(x, y - radius),
+        mp.Vector3(x + radius, y),
+        mp.Vector3(x, y + radius),
+    ]
+
+    return [mp.Prism(coords, height=mp.inf, material=material)]
+
+
 MODEL_MAPPING = {
     "bowtie-y": bow_y,
     "bowtie-x": bow_x,
@@ -326,4 +372,6 @@ MODEL_MAPPING = {
     "inv-bow-x": invertedtr_x,
     "sphere-y": partial(single_sphere, direction="y"),
     "sphere-x": partial(single_sphere, direction="x"),
+    "diamond-x": partial(diamond, direction="x"),
+    "diamond-y": partial(diamond, direction="y")
 }
