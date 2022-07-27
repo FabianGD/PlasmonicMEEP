@@ -1,4 +1,4 @@
-{ lib, python3Packages, buildPythonPackage, nix-gitignore, joblib, h5py-mpi
+{ lib, buildPythonPackage, nix-gitignore, joblib, h5py-mpi
 , matplotlib, meep, numpy, pandas, pyyaml, pytestCheckHook, openssh, tqdm
 , additionalDevDeps ? [ ], additionalShellHook ? "" }:
 
@@ -27,7 +27,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description =
       "Set of scripts for calculation of plasmon resonance/electric field enhancement on different structures";
-    licence = lib.licences.gpl3Only;
+    licence = licences.gpl3Only;
     maintainers = [ maintainers.fabiangd ];
     homepage =
       "https://gitlab.com/theoretical-chemistry-jena/quantum-dynamics/plasmonic-meep";
