@@ -8,8 +8,10 @@ img/**
 test
 /spectra.svg
 example.py
+
 # SLURM stdout files
 *.out
+*.log
 
 # Nix output
 /result
