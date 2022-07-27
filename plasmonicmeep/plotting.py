@@ -293,9 +293,24 @@ class PhaseData:
 
     _phase: Optional[npt.ArrayLike] = None
 
-    def _calc_phase(self, arctan: bool = True) -> npt.ArrayLike:
+    @classmethod
+    def from_files(cls, normfile: Path | str, reffile: Path | str, slice_xy: slice, polarization: str = "ex"):
+        return cls(
+            get_analytical_signal(normfile, slice_xy=slice_xy, polarization=polarization),
+            get_analytical_signal(reffile, slice_xy=slice_xy, polarization=polarization),
+        )
+
+    def _calc_phase(self, arctan: bool = False) -> npt.ArrayLike:
         phase = calc_phase_from_analytical_signal(self.norm, self.ref, arctan=arctan)
         return phase
+
+    def to_h5file(self, folder: Path | str, filename: Path | str):
+
+        folder = Path(folder)
+        folder.mkdir(exist_ok=True, parents=True)
+
+        with h5py.File(folder / filename, "w") as f:
+            f.create_dataset("phase", data=self.phase)
 
     @property
     def phase(self) -> npt.ArrayLike:
