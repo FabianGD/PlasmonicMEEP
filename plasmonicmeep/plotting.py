@@ -96,8 +96,8 @@ def get_extent(
 
     # Calculate extent, if required
     if resolution:
-        max_x = shape[0] / (resolution * 1e-3)
-        max_y = shape[1] / (resolution * 1e-3)
+        max_x = shape[0] / (2 * resolution * 1e-3)
+        max_y = shape[1] / (2 * resolution * 1e-3)
         extent = (-max_x, max_x, -max_y, max_y)
     else:
         extent = None
@@ -389,8 +389,8 @@ def plot_phasemap(
         phase_data.phase,
         cmap="twilight_shifted",
         extent=extent,
-        vmin=-np.pi / 2,
-        vmax=np.pi / 2,
+        vmin=-np.pi,
+        vmax=np.pi,
         interpolation="nearest",
     )
     phasefig.colorbar(im, ax=phaseax)
