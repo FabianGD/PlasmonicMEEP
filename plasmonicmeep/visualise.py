@@ -113,6 +113,32 @@ def argparsing(*args):
     return args
 
 
+def enhancement_spectrum(
+    ax,
+    dset,
+    freqs: np.ndarray,
+    slice_xy: slice,
+    plot_slice: slice = slice(-1),
+    percent: float = 99.9,
+):
+
+    enhancement = np.zeros_like(freqs)
+    for freq_idx in tqdm.trange(len(freqs), desc="Enhancement"):
+
+        tmp_data = read_h5ds_direct(
+            dset, slice_selector=np.s_[slice_xy, slice_xy, freq_idx]
+        )
+
+        # taking 99.9 percentile instead of maximum to eliminate
+        # hotspot enhancement
+        enhancement[freq_idx] = np.percentile(tmp_data, percent)
+        del tmp_data
+
+    (line, ) = ax.plot(1000 / freqs[plot_slice], enhancement[plot_slice])
+
+    return line
+
+
 def main(*args):
     """
     Main function for the visualiser
@@ -154,52 +180,22 @@ def main(*args):
     # skip the nonphysical low-frequncy part of spectra
     skip_freq = np.argmin(np.abs(args.min_freq - freqs))
 
-    freqs = freqs[skip_freq:]
+    s_freqs = freqs[skip_freq:]
 
     # Calculate enhancement at each frequency
 
     if not args.disable_spectrum:
-
         logger.info("Calculating enhancement over frequency.")
-
-        enhancement = np.zeros_like(freqs)
-        for freq_idx in tqdm.trange(freqs.shape[0], desc="Enhancement"):
-
-            tmp_data = read_h5ds_direct(
-                dset, slice_selector=np.s_[slice_xy, slice_xy, freq_idx]
-            )
-
-            # taking 99.9 percentile instead of maximum to eliminate
-            # hotspot enhancement
-            enhancement[freq_idx] = np.percentile(tmp_data, 99.9)
-            del tmp_data
-
-        logger.info("Done calculating enhancement over frequency.")
-
-        # Plot the spectrum
         specfig, ax = plt.subplots(nrows=1, ncols=1, constrained_layout=True)
-        ax.plot(1000 / freqs[skip_freq:], enhancement[skip_freq:])
+
+        enhancement_spectrum(
+            ax, dset, freqs, slice_xy=slice_xy, plot_slice=np.s_[skip_freq:]
+        )
+
         ax.set_xlabel("Wavelength / nm")
         ax.set_ylabel("$|\\vec{E}$/$\\vec{E_0}|^2$")
 
-        # # Save the spectrum to file, if requested
-        # if args.save:
-        #     try:
-        #         import pandas as pd  # pylint: disable=import-outside-toplevel
-        #     except ImportError:
-        #         print(
-        #             "Could not import pandas. "
-        #             "It's required for output of xls and csv data."
-        #         )
-
-        #     df = pd.DataFrame()
-        #     df["lambda"] = 1000 / freqs[skip_freq:]
-        #     df["enhancement"] = enhancement[skip_freq:]
-
-        #     fname = inputfile.stem
-
-        #     ext = ".xlsx" if args.excel else ".csv"
-        #     df.to_excel(output_dir / "".join(["Spectra_", str(fname), ext]), index=False)
+        logger.info("Done calculating enhancement over frequency.")
 
         # Print spectrum file
         specfile = output_dir / "Spectrum_Enhancement_over_Wavelength.png"
@@ -214,7 +210,7 @@ def main(*args):
 
         multiplot_enhancement(
             data,
-            freqs=freqs,
+            freqs=s_freqs,
             folder=output_dir,
             subfolder="maps",
             extensions=[".png", ".svg"],
@@ -241,7 +237,7 @@ def main(*args):
     if args.interactive:
         # Visualize data with the multiviewer
         data = read_h5ds_direct(
-                dset, slice_selector=np.s_[slice_xy, slice_xy, skip_freq:]
+            dset, slice_selector=np.s_[slice_xy, slice_xy, skip_freq:]
         ).transpose(1, 0, -1)
 
         multi_slice_viewer(
