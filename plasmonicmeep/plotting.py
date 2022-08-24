@@ -337,7 +337,7 @@ def calc_phase_from_analytical_signal(
     Returns:
         npt.ArrayLike: Relative phase between the norm and reference data.
     """
-    phaseH = inner(ref, np.conj(norm)) / np.sqrt(
+    phaseH = inner(norm, np.conj(ref)) / np.sqrt(
         inner(ref, np.conj(ref)) * inner(norm, np.conj(norm))
     )
     if arctan:
