@@ -303,7 +303,7 @@ class PhaseData:
         )
 
     def _calc_phase(self, arctan: bool = False) -> npt.ArrayLike:
-        phase = calc_phase_from_analytical_signal(self.norm, self.ref, arctan=arctan)
+        phase = calc_phase_from_analytical_signal(self.norm - self.ref, self.ref, arctan=arctan)
         return phase
 
     def to_h5file(self, folder: Path | str, filename: Path | str):
